@@ -18,13 +18,12 @@ let b = "hello";
 
 const PI = 3.14159;
 
-// global.x = 42;
-// x = 3;
-
 function add(x: number, y: number) {
 	let result = x + y;
 	return result;
 }
+
+print(`${ftos(acall(add, [{}, 3, 2]))}\n`);
 
 function circleArea(r: number) {
 	return PI * r * r;

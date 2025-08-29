@@ -3,7 +3,8 @@
         "composite": true,
         "noLib": true,
         "types": [],
-        "strict": true
+        "strict": true,
+        "skipLibCheck": true
     },
     "include": [
         "./**/*.ts",

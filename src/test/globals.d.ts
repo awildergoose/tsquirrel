@@ -28,16 +28,66 @@ declare global {
 		tostring(): string;
 	}
 
+	class String {
+		find(searchString: string, startIndex: number): number | null;
+		len(): number;
+		slice(startIndex: number, endIndex?: number): string;
+		tofloat(): number;
+		tointeger(): number;
+		tolower(): string;
+		toupper(): string;
+	}
+
+	function acall(fn: Function, args: any[]): any;
+	function bindenv(fn: Function, contextObject: any): any;
+	function pacall(fn: Function, arguments: any[]): any;
+
 	function printl(text: string): void;
 	function print(text: string): void;
 
-	// quakec style function names :evil:
+	// Float
 	// Convert a float to an integer
 	function ftoi(float: number): number;
 	// Convert a float to a string
 	function ftos(float: number): string;
 	// Convert a float to a character
 	function ftoc(float: number): string;
+
+	// Integer
+	// Convert an integer to a character
+	function itoc(int: number): string;
+	// Convert an integer to a float
+	function itof(int: number): number;
+	// Convert an integer to a string
+	function itos(int: number): string;
+
+	// String
+	/**
+	 * Format specifiers:
+	 *
+	 * | Spec | Type    | Description                          |
+	 * |------|---------|--------------------------------------|
+	 * | `%x` | Integer | Hexadecimal (lower-case)             |
+	 * | `%X` | Integer | Hexadecimal (upper-case)             |
+	 * | `%u` | Integer | Unsigned decimal                     |
+	 * | `%o` | Integer | Octal                                |
+	 * | `%i` | Integer | Signed decimal                       |
+	 * | `%d` | Integer | Signed decimal                       |
+	 * | `%f` | Float   | Floating point                       |
+	 * | `%e` | Float   | Scientific notation                  |
+	 * | `%g` | Float   | Shortest representation (%e or %f)   |
+	 * | `%s` | String  | String                               |
+	 * | `%c` | Integer | Character                            |
+	 * | `%%` | N/A     | Percentage symbol                    |
+	 *
+	 * @param text Text to format
+	 * @param values Values to substitute
+	 */
+	function format(text: string, ...values: any[]): string;
+	function lstrip(text: string): string;
+	function rstrip(text: string): string;
+	function split(text: string, delimiter: string): Array<String>;
+	function strip(text: string): string;
 }
 
 export {};
