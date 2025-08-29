@@ -85,10 +85,11 @@ function handleVariableStatement(
 	let keyword = "";
 	let setter = "<-";
 
-	if (node.getDeclarationList().getFlags() & ts.NodeFlags.Const) {
-		keyword = "const ";
-		setter = "=";
-	} else if (inFunction) {
+	// if (node.getDeclarationList().getFlags() & ts.NodeFlags.Const) {
+	// 	keyword = "const ";
+	// 	setter = "=";
+	// } else
+	if (inFunction) {
 		keyword = "local ";
 		setter = "=";
 	}

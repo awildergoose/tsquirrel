@@ -13,7 +13,7 @@ let myTable = {
 myTable.a = 2;
 myTable["a"] = 2;
 
-let a = 5;
+const a = 5;
 let b = "hello";
 
 const PI = 3.14159;
