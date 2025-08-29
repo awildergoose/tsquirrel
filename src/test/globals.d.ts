@@ -1,3 +1,24 @@
+interface Math {
+	abs(value: number): number;
+	acos(angle: number): number;
+	asin(angle: number): number;
+	atan(value: number): number;
+	atan2(y: number, x: number): number;
+	ceil(value: number): number;
+	cos(angle: number): number;
+	exp(exponent: number): number;
+	fabs(value: number): number;
+	floor(value: number): number;
+	log(value: number): number;
+	log10(value: number): number;
+	pow(base: number, exponent: number): number;
+	rand(): number;
+	sin(angle: number): number;
+	sqrt(value: number): number;
+	srand(seed: number): void;
+	tan(angle: number): number;
+}
+
 // TODO separate valve-specific functions into a different file
 declare global {
 	class Array<T = any> {
@@ -41,6 +62,7 @@ declare global {
 	function bindenv(fn: Function, contextObject: any): any;
 	function pacall(fn: Function, arguments: any[]): any;
 
+	// TODO move this to valve.d.ts
 	/**
 	 * Print to console with a new line
 	 *
@@ -149,6 +171,29 @@ declare global {
 	 * @returns {string} Stripped string
 	 */
 	function strip(text: string): string;
+
+	// standard
+	function array(size: number, fill?: any): any[];
+	function assert(condition: boolean): void;
+	function callee(): Function;
+	function collectgarbage(): number;
+	function resurrectunreachable(): any[] | null;
+	function compilestring(code: string, bufferName?: string): Function;
+	function enabledebuginfo(enable: any): void;
+	function error(message: string): void;
+	function seterrorhandler(handler: Function): void;
+	function getconsttable(): Record<string, any>;
+	function setconsttable(
+		constTable: Record<string, any>
+	): Record<string, any>;
+	function getroottable(): Record<string, any>;
+	function setroottable(rootTable: Record<string, any>): Record<string, any>;
+	function getstackinfos(stackLevel: number): Record<string, any> | null;
+	function newthread(threadFunc: Function): Generator;
+	function suspend(returnValue: any): void;
+	function type(obj: any): string;
+
+	declare let math: Math;
 }
 
 export {};

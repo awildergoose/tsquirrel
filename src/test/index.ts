@@ -104,3 +104,5 @@ const table: number[] = [1, 2, 3];
 for (const ent in table) {
 	print(format("Hi %d\n", ent));
 }
+
+print(format("%s\n", type(table)));
