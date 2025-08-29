@@ -1,5 +1,6 @@
 import { watch } from "fs";
 import {
+	ArrowFunction,
 	BinaryExpression,
 	ClassDeclaration,
 	Expression,
@@ -143,8 +144,16 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 	return out;
 }
 
+function handleArrowFunction(node: ArrowFunction) {
+	return "";
+}
+
 function handleExpression(node: Expression) {
 	switch (node.getKind()) {
+		case ts.SyntaxKind.ArrowFunction:
+			return handleArrowFunction(
+				node.asKindOrThrow(ts.SyntaxKind.ArrowFunction)
+			);
 		case ts.SyntaxKind.Identifier:
 			if (node.getText() === "undefined") return "null";
 			return node.getText();
@@ -399,7 +408,7 @@ function compileNode(node: Node, inFunction = false): string {
 			return node.getText() + "\n";
 
 		case ts.SyntaxKind.EndOfFileToken:
-			return "// EOF";
+			return "// EOF\n";
 
 		default:
 			return `// Unknown node: ${node.getKindName()}\n`;

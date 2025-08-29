@@ -1,6 +1,12 @@
 {
-    "compilerOptions": {},
-    "files": [
-        "index.ts"
+    "compilerOptions": {
+        "composite": true,
+        "noLib": true,
+        "types": [],
+        "strict": true
+    },
+    "include": [
+        "./**/*.ts",
+        "./globals.d.ts"
     ]
 }

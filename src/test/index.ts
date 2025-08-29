@@ -50,6 +50,7 @@
 // class Person {
 // 	name: string;
 // 	age: number;
+// 	lo: boolean;
 
 // 	constructor(name: string, age: number) {
 // 		this.name = name;
@@ -62,10 +63,14 @@
 // 	}
 // }
 
-const a = 10;
+// const a = 10;
 
-if (a == 9 + 10) {
-	print("YAY");
-} else {
-	print("NO");
-}
+// if (a == 9 + 10) {
+// 	print("YAY");
+// } else {
+// 	print("NO");
+// }
+
+const d: number[] = [];
+
+d.apply((v) => {});
