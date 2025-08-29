@@ -430,23 +430,6 @@ function handleWhileStatement(node: WhileStatement) {
 	return out;
 }
 
-// function handleForStatement(node: ForStatement) {
-// 	const init = node.getInitializerOrThrow();
-// 	const condition = node.getConditionOrThrow();
-// 	const incrementor = node.getIncrementorOrThrow();
-// 	let out = "";
-// 	out += `for (${handleVariableDeclarationList(
-// 		init.asKindOrThrow(ts.SyntaxKind.VariableDeclarationList),
-// 		"local ",
-// 		"="
-// 	)}; ${handleExpression(condition)}; ${handleExpression(incrementor)}) {\n`;
-// 	node.getStatement().forEachChild((node) => {
-// 		out += compileNode(node);
-// 	});
-// 	out += "}\n";
-// 	return out;
-// }
-
 function handleForInStatement(node: ForInStatement) {
 	const init = node.getInitializer();
 	let out = "";
