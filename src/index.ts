@@ -90,10 +90,12 @@ function handleVariableStatement(
 		setter = "=";
 	}
 
-	return handleVariableDeclarationList(
-		node.getDeclarationList(),
-		keyword,
-		setter
+	return (
+		handleVariableDeclarationList(
+			node.getDeclarationList(),
+			keyword,
+			setter
+		) + "\n"
 	);
 }
 
@@ -193,8 +195,10 @@ function handleExpressionStatement(node: ExpressionStatement) {
 
 	switch (expr.getKind()) {
 		case ts.SyntaxKind.BinaryExpression:
-			return handleBinaryExpression(
-				expr.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
+			return (
+				handleBinaryExpression(
+					expr.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
+				) + "\n"
 			);
 		case ts.SyntaxKind.CallExpression:
 			const callExpr = expr.asKindOrThrow(ts.SyntaxKind.CallExpression);
@@ -207,11 +211,10 @@ function handleExpressionStatement(node: ExpressionStatement) {
 				out += handleExpression(node as Expression);
 				if (index !== args.length - 1) out += ", ";
 			});
-			out += ")";
+			out += ")\n";
 			return out;
-
 		default:
-			return `${expr.getText()} /* Unknown expr statement type ${expr.getKindName()} */`;
+			return `${expr.getText()} /* Unknown expr statement type ${expr.getKindName()} */\n`;
 	}
 }
 
@@ -228,18 +231,19 @@ function handleFunctionDeclaration(node: FunctionDeclaration) {
 	let out = "";
 
 	withScope(ScopeKind.Function, () => {
-		out += `function ${fnName}(${params}) {`;
+		out += `function ${fnName}(${params}) {\n`;
 		fnBody.forEachChild((node) => {
 			out += compileNode(node, true);
 		});
-		out += "}";
 	});
+
+	out += "}\n";
 
 	return out;
 }
 
 function handleReturnStatement(node: ReturnStatement) {
-	return `return ${handleExpression(node.getExpressionOrThrow())}`;
+	return `return ${handleExpression(node.getExpressionOrThrow())}\n`;
 }
 
 function handleForStatement(node: ForStatement) {
@@ -251,18 +255,18 @@ function handleForStatement(node: ForStatement) {
 		init.asKindOrThrow(ts.SyntaxKind.VariableDeclarationList),
 		"local ",
 		"="
-	)}; ${handleExpression(condition)}; ${handleExpression(incrementor)}) {`;
+	)}; ${handleExpression(condition)}; ${handleExpression(incrementor)}) {\n`;
 	node.getStatement().forEachChild((node) => {
 		out += compileNode(node);
 	});
-	out += "}";
+	out += "}\n";
 	return out;
 }
 
 function handleClassDeclaration(node: ClassDeclaration) {
 	let out = "";
 
-	out += `class ${node.getName()} {`;
+	out += `class ${node.getName()} {\n`;
 	withScope(ScopeKind.ClassBody, () => {
 		node.getMembers().forEach((member) => {
 			switch (member.getKind()) {
@@ -272,11 +276,11 @@ function handleClassDeclaration(node: ClassDeclaration) {
 					);
 					const params = handleParameters(ctor.getParameters());
 					withScope(ScopeKind.Constructor, () => {
-						out += `constructor(${params}) {`;
+						out += `constructor(${params}) {\n`;
 						ctor.getBodyOrThrow().forEachChild((n) => {
 							out += compileNode(n, true);
 						});
-						out += "}";
+						out += "}\n";
 					});
 					break;
 
@@ -289,7 +293,7 @@ function handleClassDeclaration(node: ClassDeclaration) {
 					const init = memberInit
 						? handleExpression(memberInit)
 						: "null";
-					out += `${memberName} = ${init}`;
+					out += `${memberName} = ${init}\n`;
 					break;
 
 				case ts.SyntaxKind.MethodDeclaration:
@@ -299,17 +303,17 @@ function handleClassDeclaration(node: ClassDeclaration) {
 					const mName = method.getName();
 					const mParams = handleParameters(method.getParameters());
 					withScope(ScopeKind.Method, () => {
-						out += `function ${mName}(${mParams}) {`;
+						out += `function ${mName}(${mParams}) {\n`;
 						method
 							.getBodyOrThrow()
 							.forEachChild((n) => (out += compileNode(n, true)));
-						out += "}";
+						out += "}\n";
 					});
 					break;
 			}
 		});
 	});
-	out += "}";
+	out += "}\n";
 	return out;
 }
 
@@ -344,8 +348,10 @@ function compileNode(node: Node, inFunction = false): string {
 			);
 
 		case ts.SyntaxKind.BinaryExpression:
-			return handleBinaryExpression(
-				node.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
+			return (
+				handleBinaryExpression(
+					node.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
+				) + "\n"
 			);
 
 		case ts.SyntaxKind.ClassDeclaration:
@@ -356,7 +362,7 @@ function compileNode(node: Node, inFunction = false): string {
 		case ts.SyntaxKind.NumericLiteral:
 		case ts.SyntaxKind.StringLiteral:
 		case ts.SyntaxKind.Identifier:
-			return node.getText();
+			return node.getText() + "\n";
 
 		case ts.SyntaxKind.EndOfFileToken:
 			return "// EOF";
