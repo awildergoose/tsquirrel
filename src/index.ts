@@ -6,6 +6,7 @@ import {
 	ExpressionStatement,
 	ForStatement,
 	FunctionDeclaration,
+	IfStatement,
 	Node,
 	ObjectLiteralExpression,
 	ParameterDeclaration,
@@ -327,9 +328,27 @@ function handleClassDeclaration(node: ClassDeclaration) {
 	return out;
 }
 
-function compileNode(node: Node, inFunction = false): string {
-	console.log(node.getKindName());
+function handleIfStatement(node: IfStatement) {
+	let out = "";
 
+	const expression = node.getExpression();
+	out += `if (${handleExpression(expression)}) {\n`;
+	node.getThenStatement().forEachChild((node) => {
+		out += compileNode(node, false);
+	});
+	const elseStatement = node.getElseStatement();
+	if (elseStatement !== undefined) {
+		out += `} else {\n`;
+		elseStatement.forEachChild((node) => {
+			out += compileNode(node, false);
+		});
+	}
+
+	out += "}\n";
+	return out;
+}
+
+function compileNode(node: Node, inFunction = false): string {
 	switch (node.getKind()) {
 		case ts.SyntaxKind.VariableStatement:
 			return handleVariableStatement(
@@ -369,6 +388,11 @@ function compileNode(node: Node, inFunction = false): string {
 				node.asKindOrThrow(ts.SyntaxKind.ClassDeclaration)
 			);
 
+		case ts.SyntaxKind.IfStatement:
+			return handleIfStatement(
+				node.asKindOrThrow(ts.SyntaxKind.IfStatement)
+			);
+
 		case ts.SyntaxKind.NumericLiteral:
 		case ts.SyntaxKind.StringLiteral:
 		case ts.SyntaxKind.Identifier:
@@ -378,7 +402,7 @@ function compileNode(node: Node, inFunction = false): string {
 			return "// EOF";
 
 		default:
-			return `// Unknown node: ${node.getKindName()}`;
+			return `// Unknown node: ${node.getKindName()}\n`;
 	}
 }
 
