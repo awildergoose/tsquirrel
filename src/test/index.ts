@@ -73,4 +73,6 @@
 
 const d: number[] = [];
 
-d.apply((v) => {});
+d.apply((v) => {
+	printl(`OK ${v}`);
+});

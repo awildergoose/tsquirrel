@@ -14,6 +14,7 @@ import {
 	Project,
 	ReturnStatement,
 	SourceFile,
+	TemplateExpression,
 	ts,
 	VariableDeclarationList,
 	VariableStatement,
@@ -145,7 +146,13 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 }
 
 function handleArrowFunction(node: ArrowFunction) {
-	return node.getText();
+	let out = "";
+	out += `@(${handleParameters(node.getParameters())}) {\n`;
+	node.getBody().forEachChild((node) => {
+		out += compileNode(node, true);
+	});
+	out += "}\n";
+	return out;
 }
 
 function handleExpression(node: Expression) {
@@ -176,6 +183,10 @@ function handleExpression(node: Expression) {
 		case ts.SyntaxKind.BinaryExpression:
 			return handleBinaryExpression(
 				node.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
+			);
+		case ts.SyntaxKind.TemplateExpression:
+			return handleTemplateExpression(
+				node.asKindOrThrow(ts.SyntaxKind.TemplateExpression)
 			);
 		case ts.SyntaxKind.ElementAccessExpression:
 		case ts.SyntaxKind.PostfixUnaryExpression:
@@ -236,6 +247,24 @@ function handleExpressionStatement(node: ExpressionStatement) {
 		default:
 			return `${expr.getText()} /* Unknown expr statement type ${expr.getKindName()} */\n`;
 	}
+}
+
+function handleTemplateExpression(node: TemplateExpression) {
+	let out = "";
+
+	const head = node.getHead().getText();
+	out += `"${head.slice(1, -2)}"`;
+	console.log(out);
+
+	node.getTemplateSpans().forEach((span) => {
+		const expr = handleExpression(span.getExpression());
+		const literal = span.getLiteral().getText().slice(1, -1); // remove quotes
+
+		out += " + " + expr;
+		if (literal.length > 0) out += ` + "${literal}"`;
+	});
+
+	return out;
 }
 
 function handleParameters(node: ParameterDeclaration[]) {
