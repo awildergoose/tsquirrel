@@ -102,7 +102,10 @@ function handleVariableStatement(
 function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 	let out = "{\n";
 
-	node.getProperties().forEach((property) => {
+	const props = node.getProperties();
+	props.forEach((property, i) => {
+		const isLast = i === props.length - 1;
+
 		switch (property.getKind()) {
 			case ts.SyntaxKind.PropertyAssignment:
 				const propertyTyped = property.asKindOrThrow(
@@ -110,9 +113,9 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 				);
 				out += `${propertyTyped.getName()} = ${handleExpression(
 					propertyTyped.getInitializerOrThrow()
-				)},\n`;
-
+				)}`;
 				break;
+
 			case ts.SyntaxKind.MethodDeclaration:
 				const methodTyped = property.asKindOrThrow(
 					ts.SyntaxKind.MethodDeclaration
@@ -120,19 +123,21 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 				out += `${methodTyped.getName()} = function(${handleParameters(
 					methodTyped.getParameters()
 				)}) {\n`;
-				methodTyped
-					.getBodyOrThrow()
-					.forEachChild((node) => compileNode(node, true));
-				out += "},\n";
-
+				methodTyped.getBodyOrThrow().forEachChild((node) => {
+					out += compileNode(node, true);
+				});
+				out += "}";
 				break;
+
 			default:
-				out += `${property.getText()} /* Unknown object literal expression type ${property.getKindName()} */\n`;
+				out += `${property.getText()} /* Unknown object literal expression type ${property.getKindName()} */`;
 				break;
 		}
+
+		if (!isLast) out += ",\n";
 	});
 
-	out += "}\n";
+	out += "\n}\n";
 
 	return out;
 }

@@ -1,14 +1,14 @@
-// const myTable = {
-// 	a: 3,
-// 	b: 7,
-// 	[6]: "six",
-// 	func() {
-// 		return this.a + this.b;
-// 	},
-// 	nestedTable: {
-// 		z: "a string",
-// 	},
-// };
+const myTable = {
+	a: 3,
+	b: 7,
+	[6]: "six",
+	func() {
+		return this.a + this.b;
+	},
+	nestedTable: {
+		z: "a string",
+	},
+};
 
 let a = 5;
 let b = "hello";
