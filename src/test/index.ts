@@ -74,4 +74,33 @@ d.apply((v) => {
 
 print("wah");
 print(`${ftos(1.2)}\n`);
-print(format("Hello, world! %d", 5));
+print(format("Hello, world! %d\n", 5));
+
+let sometest = 5;
+sometest += 2;
+sometest -= 2;
+sometest *= 2;
+sometest /= 2;
+print(format("sometest: %d\n", sometest));
+
+function defaultTest(a = 5, b = 3) {
+	print(format("%d %d\n", a, b));
+}
+
+defaultTest(1, 2);
+// defaultTest(3);
+// defaultTest();
+
+class Foo {
+	static some: number;
+}
+
+let somenumber = 0;
+while (somenumber++ < 5) {
+	print("what?\n");
+}
+
+const table: number[] = [1, 2, 3];
+for (const ent in table) {
+	print(format("Hi %d\n", ent));
+}

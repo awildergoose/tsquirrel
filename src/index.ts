@@ -6,6 +6,7 @@ import {
 	ClassDeclaration,
 	Expression,
 	ExpressionStatement,
+	ForInStatement,
 	ForStatement,
 	FunctionDeclaration,
 	IfStatement,
@@ -19,6 +20,7 @@ import {
 	ts,
 	VariableDeclarationList,
 	VariableStatement,
+	WhileStatement,
 } from "ts-morph";
 
 enum ScopeKind {
@@ -143,20 +145,24 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 	return out;
 }
 
+function handleBlockOrStatement(node: Node) {
+	let out = "";
+
+	if (node.getKind() === ts.SyntaxKind.Block)
+		node.forEachChild((node2) => {
+			out += compileNode(node2, true);
+		});
+	else out += `return ${handleExpression(node as any)}`;
+
+	return out;
+}
+
 function handleArrowFunction(node: ArrowFunction) {
 	let out = "";
 	out += `function(${handleParameters(node.getParameters())}) {\n`;
-	let body = node.getBody();
-
-	if (body.getKind() === ts.SyntaxKind.Block)
-		body.forEachChild((node) => {
-			out += compileNode(node, true);
-		});
-	else {
-		out += `return ${handleExpression(body as any)}`;
-	}
-
+	out += handleBlockOrStatement(node.getBody());
 	out += "}\n";
+
 	return out;
 }
 
@@ -369,7 +375,8 @@ function handleClassDeclaration(node: ClassDeclaration) {
 					const init = memberInit
 						? handleExpression(memberInit)
 						: "null";
-					out += `${memberName} = ${init}\n`;
+					const prefix = memberTyped.isStatic() ? "static " : "";
+					out += `${prefix}${memberName} = ${init}\n`;
 					break;
 
 				case ts.SyntaxKind.MethodDeclaration:
@@ -409,6 +416,47 @@ function handleIfStatement(node: IfStatement) {
 		});
 	}
 
+	out += "}\n";
+	return out;
+}
+
+function handleWhileStatement(node: WhileStatement) {
+	let out = "";
+
+	const expression = node.getExpression();
+	out += `while (${handleExpression(expression)}) {\n`;
+	out += handleBlockOrStatement(node.getStatement());
+	out += "}\n";
+	return out;
+}
+
+// function handleForStatement(node: ForStatement) {
+// 	const init = node.getInitializerOrThrow();
+// 	const condition = node.getConditionOrThrow();
+// 	const incrementor = node.getIncrementorOrThrow();
+// 	let out = "";
+// 	out += `for (${handleVariableDeclarationList(
+// 		init.asKindOrThrow(ts.SyntaxKind.VariableDeclarationList),
+// 		"local ",
+// 		"="
+// 	)}; ${handleExpression(condition)}; ${handleExpression(incrementor)}) {\n`;
+// 	node.getStatement().forEachChild((node) => {
+// 		out += compileNode(node);
+// 	});
+// 	out += "}\n";
+// 	return out;
+// }
+
+function handleForInStatement(node: ForInStatement) {
+	const init = node.getInitializer();
+	let out = "";
+
+	out += `foreach (${init
+		.asKindOrThrow(ts.SyntaxKind.VariableDeclarationList)
+		.getDeclarations()
+		.map((node) => node.getName())
+		.join(", ")} in ${handleExpression(node.getExpression())}) {\n`;
+	out += handleBlockOrStatement(node.getStatement());
 	out += "}\n";
 	return out;
 }
@@ -456,6 +504,16 @@ function compileNode(node: Node, inFunction = false): string {
 		case ts.SyntaxKind.IfStatement:
 			return handleIfStatement(
 				node.asKindOrThrow(ts.SyntaxKind.IfStatement)
+			);
+
+		case ts.SyntaxKind.WhileStatement:
+			return handleWhileStatement(
+				node.asKindOrThrow(ts.SyntaxKind.WhileStatement)
+			);
+
+		case ts.SyntaxKind.ForInStatement:
+			return handleForInStatement(
+				node.asKindOrThrow(ts.SyntaxKind.ForInStatement)
 			);
 
 		case ts.SyntaxKind.NumericLiteral:
