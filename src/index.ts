@@ -145,7 +145,7 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 }
 
 function handleArrowFunction(node: ArrowFunction) {
-	return "";
+	return node.getText();
 }
 
 function handleExpression(node: Expression) {
@@ -421,6 +421,7 @@ function compileFile(file: SourceFile): string {
 	file.forEachChild((node) => {
 		out += compileNode(node);
 	});
+
 	return out;
 }
 
@@ -428,6 +429,7 @@ async function compileProject(project: Project) {
 	console.time("compilation");
 	const output = project
 		.getSourceFiles()
+		.filter((f) => !f.getFilePath().endsWith(".d.ts")) // skip declarations
 		.map((file) => compileFile(file))
 		.join("\n");
 	console.timeEnd("compilation");
@@ -438,6 +440,8 @@ async function main() {
 	console.time("parsing");
 	const project = new Project({
 		tsConfigFilePath: "./src/test/tsconfig.json",
+		skipFileDependencyResolution: true,
+		skipAddingFilesFromTsConfig: false,
 	});
 	console.timeEnd("parsing");
 
