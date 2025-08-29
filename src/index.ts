@@ -250,16 +250,29 @@ function handleBinaryExpression(node: BinaryExpression): string {
 
 function handleCallExpression(callExpr: CallExpression) {
 	const name = handleExpression(callExpr.getExpression());
-	const args = callExpr.getArguments();
-	let out = "";
+	const args = callExpr
+		.getArguments()
+		.map((node) => handleExpression(node as Expression));
 
-	out += `${name}(`;
-	args.forEach((node, index) => {
-		out += handleExpression(node as Expression);
-		if (index !== args.length - 1) out += ", ";
-	});
-	out += ")";
-	return out;
+	let expectedParamCount = args.length;
+	const exprNode = callExpr.getExpression();
+
+	if (exprNode.getKind() === ts.SyntaxKind.Identifier) {
+		const decl = exprNode
+			.asKindOrThrow(ts.SyntaxKind.Identifier)
+			.getDefinitionNodes()[0];
+		if (decl && ts.isFunctionDeclaration(decl.compilerNode)) {
+			expectedParamCount = decl
+				.asKindOrThrow(ts.SyntaxKind.FunctionDeclaration)
+				.getParameters().length;
+		}
+	}
+
+	while (args.length < expectedParamCount) {
+		args.push("null");
+	}
+
+	return `${name}(${args.join(", ")})`;
 }
 
 function handleExpressionStatement(node: ExpressionStatement) {
@@ -308,18 +321,30 @@ function handleFunctionDeclaration(node: FunctionDeclaration) {
 	const fnName = node.getName();
 	const fnBody = node.getBodyOrThrow();
 	const fnParams = node.getParameters();
-	const params = handleParameters(fnParams);
+	const params = fnParams.map((p) => p.getName());
+	const defaults: string[] = [];
+
+	fnParams.forEach((p) => {
+		const init = p.getInitializer();
+		if (init) {
+			defaults.push(
+				`if (${p.getName()} == null) ${p.getName()} = ${handleExpression(
+					init
+				)};`
+			);
+		}
+	});
 
 	let out = "";
 
 	withScope(ScopeKind.Function, () => {
 		out += `function ${fnName}(${params}) {\n`;
+		defaults.forEach((line) => (out += line + "\n"));
 		fnBody.forEachChild((node) => {
 			out += compileNode(node, true);
 		});
+		out += "}\n";
 	});
-
-	out += "}\n";
 
 	return out;
 }

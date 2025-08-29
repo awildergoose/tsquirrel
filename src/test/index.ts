@@ -88,8 +88,8 @@ function defaultTest(a = 5, b = 3) {
 }
 
 defaultTest(1, 2);
-// defaultTest(3);
-// defaultTest();
+defaultTest(3);
+defaultTest();
 
 class Foo {
 	static some: number;
