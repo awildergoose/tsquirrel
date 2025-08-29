@@ -1,20 +1,18 @@
 // TODO separate valve-specific functions into a different file
 declare global {
 	class Array<T = any> {
-		constructor(size?: number);
-
-		append(item: T): void;
-		apply(fn: (item: T) => void): void;
+		append(value: T): void;
+		apply(fn: (value: T) => void): void;
 		clear(): void;
 		extend(other: Array<T>): void;
-		filter(fn: (item: T) => boolean): Array<T>;
+		filter(fn: (index: number, value: T) => boolean): Array<T>;
 		find(value: T): number | null;
-		insert(index: number, item: T): void;
+		insert(index: number, value: T): void;
 		len(): number;
-		map<U>(fn: (item: T) => U): Array<U>;
+		map<U>(fn: (value: T) => U): Array<U>;
 		pop(): T | undefined;
-		push(item: T): void;
-		reduce<U>(fn: (acc: U, item: T) => U, initial: U): U;
+		push(value: T): void;
+		reduce<U>(fn: (acc: U, value: T) => U, initial: U): U;
 		remove(index: number): T | undefined;
 		resize(newSize: number, fillValue?: T): void;
 		reverse(): void;

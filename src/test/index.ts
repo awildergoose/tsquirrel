@@ -73,4 +73,5 @@ d.apply((v) => {
 });
 
 print("wah");
-print(ftos(1.2));
+print(`${ftos(1.2)}\n`);
+print(format("Hello, world! %d", 5));

@@ -86,10 +86,6 @@ function handleVariableStatement(
 	let keyword = "";
 	let setter = "<-";
 
-	// if (node.getDeclarationList().getFlags() & ts.NodeFlags.Const) {
-	// 	keyword = "const ";
-	// 	setter = "=";
-	// } else
 	if (inFunction) {
 		keyword = "local ";
 		setter = "=";
@@ -150,14 +146,21 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 function handleArrowFunction(node: ArrowFunction) {
 	let out = "";
 	out += `function(${handleParameters(node.getParameters())}) {\n`;
-	node.getBody().forEachChild((node) => {
-		out += compileNode(node, true);
-	});
+	let body = node.getBody();
+
+	if (body.getKind() === ts.SyntaxKind.Block)
+		body.forEachChild((node) => {
+			out += compileNode(node, true);
+		});
+	else {
+		out += `return ${handleExpression(body as any)}`;
+	}
+
 	out += "}\n";
 	return out;
 }
 
-function handleExpression(node: Expression) {
+function handleExpression(node: Expression): string {
 	switch (node.getKind()) {
 		case ts.SyntaxKind.ArrowFunction:
 			return handleArrowFunction(
@@ -194,6 +197,14 @@ function handleExpression(node: Expression) {
 			return handleCallExpression(
 				node.asKindOrThrow(ts.SyntaxKind.CallExpression)
 			);
+		case ts.SyntaxKind.NewExpression: {
+			const nodeTyped = node.asKindOrThrow(ts.SyntaxKind.NewExpression);
+			return `new ${handleExpression(
+				nodeTyped.getExpression()
+			)}(${nodeTyped
+				.getArguments()
+				.map((x) => handleExpression(x as Expression))})`;
+		}
 		case ts.SyntaxKind.ElementAccessExpression:
 		case ts.SyntaxKind.PostfixUnaryExpression:
 		case ts.SyntaxKind.NumericLiteral:
@@ -205,6 +216,10 @@ function handleExpression(node: Expression) {
 			return node.getText();
 		case ts.SyntaxKind.UndefinedKeyword:
 			return "null";
+		case ts.SyntaxKind.AsExpression:
+			return handleExpression(
+				node.asKindOrThrow(ts.SyntaxKind.AsExpression).getExpression()
+			);
 		default:
 			return `${node.getText()} /* Unknown expr type ${node.getKindName()} */`;
 	}
@@ -452,7 +467,7 @@ function compileNode(node: Node, inFunction = false): string {
 			return "// EOF\n";
 
 		default:
-			return `// Unknown node: ${node.getKindName()}\n`;
+			return `${node.getText()} /* Unknown node: ${node.getKindName()} */\n`;
 	}
 }
 
