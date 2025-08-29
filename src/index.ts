@@ -7,6 +7,7 @@ import {
 	ForStatement,
 	FunctionDeclaration,
 	Node,
+	ObjectLiteralExpression,
 	ParameterDeclaration,
 	Project,
 	ReturnStatement,
@@ -36,23 +37,6 @@ function withScope<T>(newScope: ScopeKind, fn: () => T): T {
 	}
 }
 
-let output = "";
-
-function emit(...rest: any) {
-	output += rest.join("\n") + "\n";
-}
-
-function emitInline(...rest: any) {
-	output += rest.join("");
-}
-
-function emitPrev(...rest: any) {
-	if (output.endsWith("\n")) {
-		output = output.slice(0, -1);
-	}
-	output += rest.join("") + "\n";
-}
-
 const declaredSlots = new Set<string>();
 
 function assignSlot(name: string, rhs: string, isGlobal = false): string {
@@ -79,19 +63,22 @@ function handleVariableDeclarationList(
 	node: VariableDeclarationList,
 	keyword: string = "",
 	setter: string = "<-"
-) {
+): string {
 	let out = "";
 
 	node.getDeclarations().forEach((declaration) => {
-		out += `${keyword}${declaration.getName()} ${setter} ${declaration
-			.getInitializer()
-			?.getText()}`;
+		const value = declaration.getInitializer();
+		let finalValue = value !== undefined ? handleExpression(value) : "null";
+		out += `${keyword}${declaration.getName()} ${setter} ${finalValue}`;
 	});
 
 	return out;
 }
 
-function handleVariableStatement(node: VariableStatement, inFunction: boolean) {
+function handleVariableStatement(
+	node: VariableStatement,
+	inFunction: boolean
+): string {
 	let keyword = "";
 	let setter = "<-";
 
@@ -103,13 +90,49 @@ function handleVariableStatement(node: VariableStatement, inFunction: boolean) {
 		setter = "=";
 	}
 
-	emit(
-		handleVariableDeclarationList(
-			node.getDeclarationList(),
-			keyword,
-			setter
-		)
+	return handleVariableDeclarationList(
+		node.getDeclarationList(),
+		keyword,
+		setter
 	);
+}
+
+function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
+	let out = "{\n";
+
+	node.getProperties().forEach((property) => {
+		switch (property.getKind()) {
+			case ts.SyntaxKind.PropertyAssignment:
+				const propertyTyped = property.asKindOrThrow(
+					ts.SyntaxKind.PropertyAssignment
+				);
+				out += `${propertyTyped.getName()} = ${handleExpression(
+					propertyTyped.getInitializerOrThrow()
+				)},\n`;
+
+				break;
+			case ts.SyntaxKind.MethodDeclaration:
+				const methodTyped = property.asKindOrThrow(
+					ts.SyntaxKind.MethodDeclaration
+				);
+				out += `${methodTyped.getName()} = function(${handleParameters(
+					methodTyped.getParameters()
+				)}) {\n`;
+				methodTyped
+					.getBodyOrThrow()
+					.forEachChild((node) => compileNode(node, true));
+				out += "},\n";
+
+				break;
+			default:
+				out += `${property.getText()} /* Unknown object literal expression type ${property.getKindName()} */\n`;
+				break;
+		}
+	});
+
+	out += "}\n";
+
+	return out;
 }
 
 function handleExpression(node: Expression) {
@@ -117,6 +140,10 @@ function handleExpression(node: Expression) {
 		case ts.SyntaxKind.Identifier:
 			if (node.getText() === "undefined") return "null";
 			return node.getText();
+		case ts.SyntaxKind.ObjectLiteralExpression:
+			return handleObjectLiteralExpression(
+				node.asKindOrThrow(ts.SyntaxKind.ObjectLiteralExpression)
+			);
 		case ts.SyntaxKind.PropertyAccessExpression:
 			const nodeTyped = node.asKindOrThrow(
 				ts.SyntaxKind.PropertyAccessExpression
@@ -166,30 +193,25 @@ function handleExpressionStatement(node: ExpressionStatement) {
 
 	switch (expr.getKind()) {
 		case ts.SyntaxKind.BinaryExpression:
-			emit(
-				handleBinaryExpression(
-					expr.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
-				)
+			return handleBinaryExpression(
+				expr.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
 			);
-			break;
 		case ts.SyntaxKind.CallExpression:
 			const callExpr = expr.asKindOrThrow(ts.SyntaxKind.CallExpression);
 			const name = handleExpression(callExpr.getExpression());
 			const args = callExpr.getArguments();
+			let out = "";
 
-			emitInline(`${name}(`);
+			out += `${name}(`;
 			args.forEach((node, index) => {
-				emitInline(handleExpression(node as Expression));
-				if (index !== args.length - 1) emitInline(", ");
+				out += handleExpression(node as Expression);
+				if (index !== args.length - 1) out += ", ";
 			});
-			emit(")");
-			break;
+			out += ")";
+			return out;
 
 		default:
-			emit(
-				`${expr.getText()} /* Unknown expr statement type ${expr.getKindName()} */`
-			);
-			break;
+			return `${expr.getText()} /* Unknown expr statement type ${expr.getKindName()} */`;
 	}
 }
 
@@ -203,34 +225,44 @@ function handleFunctionDeclaration(node: FunctionDeclaration) {
 	const fnParams = node.getParameters();
 	const params = handleParameters(fnParams);
 
+	let out = "";
+
 	withScope(ScopeKind.Function, () => {
-		emit(`function ${fnName}(${params}) {`);
-		fnBody.forEachChild((node) => compileNode(node, true));
-		emit("}");
+		out += `function ${fnName}(${params}) {`;
+		fnBody.forEachChild((node) => {
+			out += compileNode(node, true);
+		});
+		out += "}";
 	});
+
+	return out;
 }
 
 function handleReturnStatement(node: ReturnStatement) {
-	emit(`return ${handleExpression(node.getExpressionOrThrow())}`);
+	return `return ${handleExpression(node.getExpressionOrThrow())}`;
 }
 
 function handleForStatement(node: ForStatement) {
 	const init = node.getInitializerOrThrow();
 	const condition = node.getConditionOrThrow();
 	const incrementor = node.getIncrementorOrThrow();
-	emit(
-		`for (${handleVariableDeclarationList(
-			init.asKindOrThrow(ts.SyntaxKind.VariableDeclarationList),
-			"local ",
-			"="
-		)}; ${handleExpression(condition)}; ${handleExpression(incrementor)}) {`
-	);
-	node.getStatement().forEachChild(compileNode);
-	emit("}");
+	let out = "";
+	out += `for (${handleVariableDeclarationList(
+		init.asKindOrThrow(ts.SyntaxKind.VariableDeclarationList),
+		"local ",
+		"="
+	)}; ${handleExpression(condition)}; ${handleExpression(incrementor)}) {`;
+	node.getStatement().forEachChild((node) => {
+		out += compileNode(node);
+	});
+	out += "}";
+	return out;
 }
 
 function handleClassDeclaration(node: ClassDeclaration) {
-	emit(`class ${node.getName()} {`);
+	let out = "";
+
+	out += `class ${node.getName()} {`;
 	withScope(ScopeKind.ClassBody, () => {
 		node.getMembers().forEach((member) => {
 			switch (member.getKind()) {
@@ -240,11 +272,11 @@ function handleClassDeclaration(node: ClassDeclaration) {
 					);
 					const params = handleParameters(ctor.getParameters());
 					withScope(ScopeKind.Constructor, () => {
-						emit(`constructor(${params}) {`);
-						ctor.getBodyOrThrow().forEachChild((n) =>
-							compileNode(n, true)
-						);
-						emit("}");
+						out += `constructor(${params}) {`;
+						ctor.getBodyOrThrow().forEachChild((n) => {
+							out += compileNode(n, true);
+						});
+						out += "}";
 					});
 					break;
 
@@ -257,7 +289,7 @@ function handleClassDeclaration(node: ClassDeclaration) {
 					const init = memberInit
 						? handleExpression(memberInit)
 						: "null";
-					emit(`${memberName} = ${init}`);
+					out += `${memberName} = ${init}`;
 					break;
 
 				case ts.SyntaxKind.MethodDeclaration:
@@ -267,88 +299,88 @@ function handleClassDeclaration(node: ClassDeclaration) {
 					const mName = method.getName();
 					const mParams = handleParameters(method.getParameters());
 					withScope(ScopeKind.Method, () => {
-						emit(`function ${mName}(${mParams}) {`);
+						out += `function ${mName}(${mParams}) {`;
 						method
 							.getBodyOrThrow()
-							.forEachChild((n) => compileNode(n, true));
-						emit("}");
+							.forEachChild((n) => (out += compileNode(n, true)));
+						out += "}";
 					});
 					break;
 			}
 		});
 	});
-	emit("}");
+	out += "}";
+	return out;
 }
 
-function compileNode(node: Node, inFunction = false) {
+function compileNode(node: Node, inFunction = false): string {
+	console.log(node.getKindName());
+
 	switch (node.getKind()) {
 		case ts.SyntaxKind.VariableStatement:
-			handleVariableStatement(
+			return handleVariableStatement(
 				node.asKindOrThrow(ts.SyntaxKind.VariableStatement),
 				inFunction
 			);
-			break;
 
 		case ts.SyntaxKind.ExpressionStatement:
-			handleExpressionStatement(
+			return handleExpressionStatement(
 				node.asKindOrThrow(ts.SyntaxKind.ExpressionStatement)
 			);
-			break;
 
 		case ts.SyntaxKind.FunctionDeclaration:
-			handleFunctionDeclaration(
+			return handleFunctionDeclaration(
 				node.asKindOrThrow(ts.SyntaxKind.FunctionDeclaration)
 			);
-			break;
 
 		case ts.SyntaxKind.ReturnStatement:
-			handleReturnStatement(
+			return handleReturnStatement(
 				node.asKindOrThrow(ts.SyntaxKind.ReturnStatement)
 			);
-			break;
 
 		case ts.SyntaxKind.ForStatement:
-			handleForStatement(node.asKindOrThrow(ts.SyntaxKind.ForStatement));
-			break;
+			return handleForStatement(
+				node.asKindOrThrow(ts.SyntaxKind.ForStatement)
+			);
 
 		case ts.SyntaxKind.BinaryExpression:
-			emit(
-				handleBinaryExpression(
-					node.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
-				)
+			return handleBinaryExpression(
+				node.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
 			);
-			break;
 
 		case ts.SyntaxKind.ClassDeclaration:
-			handleClassDeclaration(
+			return handleClassDeclaration(
 				node.asKindOrThrow(ts.SyntaxKind.ClassDeclaration)
 			);
-			break;
 
 		case ts.SyntaxKind.NumericLiteral:
 		case ts.SyntaxKind.StringLiteral:
 		case ts.SyntaxKind.Identifier:
-			emit(node.getText());
-			break;
+			return node.getText();
 
 		case ts.SyntaxKind.EndOfFileToken:
-			emit("// EOF");
-			break;
+			return "// EOF";
 
 		default:
-			emit(`// Unknown node: ${node.getKindName()}`);
-			break;
+			return `// Unknown node: ${node.getKindName()}`;
 	}
 }
 
-function compileFile(file: SourceFile) {
-	file.forEachChild(compileNode);
+function compileFile(file: SourceFile): string {
+	let out = "";
+
+	file.forEachChild((node) => {
+		out += compileNode(node);
+	});
+	return out;
 }
 
 async function compileProject(project: Project) {
-	output = "";
 	console.time("compilation");
-	project.getSourceFiles().forEach(compileFile);
+	const output = project
+		.getSourceFiles()
+		.map((file) => compileFile(file))
+		.join("\n");
 	console.timeEnd("compilation");
 	await Bun.write("out.nut", output);
 }
