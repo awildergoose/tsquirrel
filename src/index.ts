@@ -133,6 +133,11 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 				break;
 
 			default:
+				const filePath = property.getSourceFile().getFilePath();
+				const line = property.getStartLineNumber();
+				console.warn(
+					`[WARN] Unknown object literal expression type: ${property.getKindName()} in ${filePath}:${line}`
+				);
 				out += `${property.getText()} /* Unknown object literal expression type ${property.getKindName()} */`;
 				break;
 		}
@@ -227,6 +232,11 @@ function handleExpression(node: Expression): string {
 				node.asKindOrThrow(ts.SyntaxKind.AsExpression).getExpression()
 			);
 		default:
+			const filePath = node.getSourceFile().getFilePath();
+			const line = node.getStartLineNumber();
+			console.warn(
+				`[WARN] Unknown expression type: ${node.getKindName()} in ${filePath}:${line}`
+			);
 			return `${node.getText()} /* Unknown expr type ${node.getKindName()} */`;
 	}
 }
@@ -292,6 +302,12 @@ function handleExpressionStatement(node: ExpressionStatement) {
 				) + "\n"
 			);
 		default:
+			const filePath = expr.getSourceFile().getFilePath();
+			const line = expr.getStartLineNumber();
+			console.warn(
+				`[WARN] Unknown expression statement type: ${expr.getKindName()} in ${filePath}:${line}`
+			);
+
 			return `${expr.getText()} /* Unknown expr statement type ${expr.getKindName()} */\n`;
 	}
 }
@@ -533,6 +549,11 @@ function compileNode(node: Node, inFunction = false): string {
 			return "// EOF\n";
 
 		default:
+			const filePath = node.getSourceFile().getFilePath();
+			const line = node.getStartLineNumber();
+			console.warn(
+				`[WARN] Unknown node type: ${node.getKindName()} in ${filePath}:${line}`
+			);
 			return `${node.getText()} /* Unknown node: ${node.getKindName()} */\n`;
 	}
 }
