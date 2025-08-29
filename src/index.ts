@@ -115,6 +115,7 @@ function handleVariableStatement(node: VariableStatement, inFunction: boolean) {
 function handleExpression(node: Expression) {
 	switch (node.getKind()) {
 		case ts.SyntaxKind.Identifier:
+			if (node.getText() === "undefined") return "null";
 			return node.getText();
 		case ts.SyntaxKind.PropertyAccessExpression:
 			const nodeTyped = node.asKindOrThrow(
@@ -138,7 +139,10 @@ function handleExpression(node: Expression) {
 		case ts.SyntaxKind.ArrayLiteralExpression:
 		case ts.SyntaxKind.TrueKeyword:
 		case ts.SyntaxKind.FalseKeyword:
+		case ts.SyntaxKind.NullKeyword:
 			return node.getText();
+		case ts.SyntaxKind.UndefinedKeyword:
+			return "null";
 		default:
 			return `${node.getText()} /* Unknown expr type ${node.getKindName()} */`;
 	}

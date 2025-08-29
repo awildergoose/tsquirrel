@@ -26,7 +26,12 @@ c = [2, 4];
 
 add(2, 3 * global.da);
 add(2, 4, 5, 3, 2);
-for (let i = 0; i < 10; i++) {}
+
+for (let i = 0; i < 10; i++) {
+	global.d = null;
+	global.c = undefined;
+}
+
 class Person {
 	name: string;
 	age: number;
