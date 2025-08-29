@@ -61,8 +61,6 @@ class Person {
 	}
 }
 
-const a = 10;
-
 if (a == 9 + 10) {
 	print("YAY");
 } else {
@@ -76,3 +74,4 @@ d.apply((v) => {
 });
 
 print("wah");
+print(ftos(1.2));

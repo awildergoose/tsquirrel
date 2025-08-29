@@ -6,10 +6,9 @@ let timeout: NodeJS.Timeout | null = null;
 let currentProc: ReturnType<typeof spawn> | null = null;
 
 async function runScript() {
-	if (currentProc) {
+	if (currentProc)
 		// Kill previous process if still running
 		currentProc.kill("SIGKILL");
-	}
 
 	currentProc = spawn(["bin/sq.exe", filename], {
 		stdout: "pipe",

@@ -15,7 +15,7 @@ declare global {
 		push(item: T): void;
 		reduce<U>(fn: (acc: U, item: T) => U, initial: U): U;
 		remove(index: number): T | undefined;
-		resize(newSize: number): void;
+		resize(newSize: number, fillValue?: T): void;
 		reverse(): void;
 		slice(start: number, end?: number): Array<T>;
 		sort(compareFn?: (a: T, b: T) => number): void;
@@ -28,10 +28,16 @@ declare global {
 		tostring(): string;
 	}
 
-	// todo Integer and Float, somehow
-
 	function printl(text: string): void;
 	function print(text: string): void;
+
+	// quakec style function names :evil:
+	// Convert a float to an integer
+	function ftoi(float: number): number;
+	// Convert a float to a string
+	function ftos(float: number): string;
+	// Convert a float to a character
+	function ftoc(float: number): string;
 }
 
 export {};

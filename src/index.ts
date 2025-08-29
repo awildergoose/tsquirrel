@@ -2,6 +2,7 @@ import { watch } from "fs";
 import {
 	ArrowFunction,
 	BinaryExpression,
+	CallExpression,
 	ClassDeclaration,
 	Expression,
 	ExpressionStatement,
@@ -189,6 +190,10 @@ function handleExpression(node: Expression) {
 			return handleTemplateExpression(
 				node.asKindOrThrow(ts.SyntaxKind.TemplateExpression)
 			);
+		case ts.SyntaxKind.CallExpression:
+			return handleCallExpression(
+				node.asKindOrThrow(ts.SyntaxKind.CallExpression)
+			);
 		case ts.SyntaxKind.ElementAccessExpression:
 		case ts.SyntaxKind.PostfixUnaryExpression:
 		case ts.SyntaxKind.NumericLiteral:
@@ -222,6 +227,20 @@ function handleBinaryExpression(node: BinaryExpression): string {
 	return `${left} ${op} ${right}`;
 }
 
+function handleCallExpression(callExpr: CallExpression) {
+	const name = handleExpression(callExpr.getExpression());
+	const args = callExpr.getArguments();
+	let out = "";
+
+	out += `${name}(`;
+	args.forEach((node, index) => {
+		out += handleExpression(node as Expression);
+		if (index !== args.length - 1) out += ", ";
+	});
+	out += ")";
+	return out;
+}
+
 function handleExpressionStatement(node: ExpressionStatement) {
 	const expr = node.getExpression();
 
@@ -233,18 +252,11 @@ function handleExpressionStatement(node: ExpressionStatement) {
 				) + "\n"
 			);
 		case ts.SyntaxKind.CallExpression:
-			const callExpr = expr.asKindOrThrow(ts.SyntaxKind.CallExpression);
-			const name = handleExpression(callExpr.getExpression());
-			const args = callExpr.getArguments();
-			let out = "";
-
-			out += `${name}(`;
-			args.forEach((node, index) => {
-				out += handleExpression(node as Expression);
-				if (index !== args.length - 1) out += ", ";
-			});
-			out += ")\n";
-			return out;
+			return (
+				handleCallExpression(
+					expr.asKindOrThrow(ts.SyntaxKind.CallExpression)
+				) + "\n"
+			);
 		default:
 			return `${expr.getText()} /* Unknown expr statement type ${expr.getKindName()} */\n`;
 	}
@@ -444,8 +456,9 @@ function compileNode(node: Node, inFunction = false): string {
 	}
 }
 
-function compileFile(file: SourceFile): string {
-	let out = "";
+async function compileFile(file: SourceFile): Promise<string> {
+	const std = await Bun.file("std.nut").text();
+	let out = `${std}\n`;
 
 	file.forEachChild((node) => {
 		out += compileNode(node);
@@ -456,11 +469,14 @@ function compileFile(file: SourceFile): string {
 
 async function compileProject(project: Project) {
 	console.time("compilation");
-	const output = project
+
+	const files = project
 		.getSourceFiles()
-		.filter((f) => !f.getFilePath().endsWith(".d.ts")) // skip declarations
-		.map((file) => compileFile(file))
-		.join("\n");
+		.filter((f) => !f.getFilePath().endsWith(".d.ts"));
+
+	const outputs = await Promise.all(files.map((file) => compileFile(file)));
+	const output = outputs.join("\n");
+
 	console.timeEnd("compilation");
 	await Bun.write("out.nut", output);
 }
