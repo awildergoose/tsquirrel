@@ -167,6 +167,7 @@ function handleExpression(node: Expression) {
 			return handleBinaryExpression(
 				node.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
 			);
+		case ts.SyntaxKind.ElementAccessExpression:
 		case ts.SyntaxKind.PostfixUnaryExpression:
 		case ts.SyntaxKind.NumericLiteral:
 		case ts.SyntaxKind.StringLiteral:
@@ -187,9 +188,13 @@ function handleBinaryExpression(node: BinaryExpression): string {
 	const right = handleExpression(node.getRight());
 	const op = node.getOperatorToken().getText();
 
-	if (op === "=") {
+	if (op === "=" && ts.isIdentifier(node.getLeft().compilerNode)) {
 		const isGlobal = left.startsWith("::");
 		return assignSlot(left, right, isGlobal);
+	}
+
+	if (op === "=") {
+		return `${left} = ${right}`;
 	}
 
 	return `${left} ${op} ${right}`;

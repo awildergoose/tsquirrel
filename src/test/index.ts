@@ -10,6 +10,9 @@ const myTable = {
 	},
 };
 
+myTable.a = 2;
+myTable["a"] = 2;
+
 let a = 5;
 let b = "hello";
 
