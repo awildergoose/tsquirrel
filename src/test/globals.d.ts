@@ -31,6 +31,7 @@ declare global {
 	// todo Integer and Float, somehow
 
 	function printl(text: string): void;
+	function print(text: string): void;
 }
 
 export {};

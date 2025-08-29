@@ -147,7 +147,7 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 
 function handleArrowFunction(node: ArrowFunction) {
 	let out = "";
-	out += `@(${handleParameters(node.getParameters())}) {\n`;
+	out += `function(${handleParameters(node.getParameters())}) {\n`;
 	node.getBody().forEachChild((node) => {
 		out += compileNode(node, true);
 	});
@@ -254,7 +254,6 @@ function handleTemplateExpression(node: TemplateExpression) {
 
 	const head = node.getHead().getText();
 	out += `"${head.slice(1, -2)}"`;
-	console.log(out);
 
 	node.getTemplateSpans().forEach((span) => {
 		const expr = handleExpression(span.getExpression());

@@ -10,7 +10,8 @@
 		"typescript": "^5"
 	},
 	"scripts": {
-		"watch": "bun --watch src/index.ts"
+		"watch": "bun --watch src/index.ts",
+		"watchtest": "bun --watch src/testcompile.ts"
 	},
 	"dependencies": {
 		"ts-morph": "^26.0.0"
