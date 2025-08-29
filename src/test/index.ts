@@ -106,3 +106,6 @@ for (const ent in table) {
 }
 
 print(format("%s\n", type(table)));
+
+const t: Vector = Vector(5, 5);
+t.Length();

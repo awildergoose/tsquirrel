@@ -19,7 +19,6 @@ interface Math {
 	tan(angle: number): number;
 }
 
-// TODO separate valve-specific functions into a different file
 declare global {
 	class Array<T = any> {
 		append(value: T): void;
@@ -62,13 +61,6 @@ declare global {
 	function bindenv(fn: Function, contextObject: any): any;
 	function pacall(fn: Function, arguments: any[]): any;
 
-	// TODO move this to valve.d.ts
-	/**
-	 * Print to console with a new line
-	 *
-	 * @param {string} text Text to print
-	 */
-	function printl(text: string): void;
 	/**
 	 * Print to console without a new line
 	 *
