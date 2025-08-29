@@ -1,3 +1,4 @@
+// TODO separate valve-specific functions into a different file
 declare global {
 	class Array<T = any> {
 		constructor(size?: number);
@@ -42,26 +43,63 @@ declare global {
 	function bindenv(fn: Function, contextObject: any): any;
 	function pacall(fn: Function, arguments: any[]): any;
 
+	/**
+	 * Print to console with a new line
+	 *
+	 * @param {string} text Text to print
+	 */
 	function printl(text: string): void;
+	/**
+	 * Print to console without a new line
+	 *
+	 * @param {string} text Text to print
+	 */
 	function print(text: string): void;
 
-	// Float
-	// Convert a float to an integer
+	/**
+	 * Convert a float to an integer
+	 *
+	 * @param {number} float Float to convert
+	 * @returns {string} Float as an integer
+	 */
 	function ftoi(float: number): number;
-	// Convert a float to a string
+	/**
+	 * Convert a float to a string
+	 *
+	 * @param {number} float Float to convert
+	 * @returns {string} Float as a string
+	 */
 	function ftos(float: number): string;
-	// Convert a float to a character
+	/**
+	 * Convert a float to a character
+	 *
+	 * @param {number} float Float to convert
+	 * @returns {string} Float as a character
+	 */
 	function ftoc(float: number): string;
 
-	// Integer
-	// Convert an integer to a character
+	/**
+	 * Convert an integer to a character
+	 *
+	 * @param {number} int Number to convert
+	 * @returns {string} Number as a character
+	 */
 	function itoc(int: number): string;
-	// Convert an integer to a float
+	/**
+	 * Convert an integer to a float
+	 *
+	 * @param {number} int Number to convert
+	 * @returns {number} Number as a string
+	 */
 	function itof(int: number): number;
-	// Convert an integer to a string
+	/**
+	 * Convert an integer to a string
+	 *
+	 * @param {number} int Number to convert
+	 * @returns {string} Number as a string
+	 */
 	function itos(int: number): string;
 
-	// String
 	/**
 	 * Format specifiers:
 	 *
@@ -80,13 +118,38 @@ declare global {
 	 * | `%c` | Integer | Character                            |
 	 * | `%%` | N/A     | Percentage symbol                    |
 	 *
-	 * @param text Text to format
+	 * @param text String to format
 	 * @param values Values to substitute
 	 */
 	function format(text: string, ...values: any[]): string;
+	/**
+	 * Strip all whitespace from the start of the string
+	 *
+	 * @param {string} text string to strip
+	 * @returns {string} Stripped string
+	 */
 	function lstrip(text: string): string;
+	/**
+	 * Strip all whitespace from the end of the string
+	 *
+	 * @param {string} text String to strip
+	 * @returns {string} Stripped string
+	 */
 	function rstrip(text: string): string;
+	/**
+	 * Split a string by a delimiter
+	 *
+	 * @param {string} text String to split
+	 * @param {string} delimiter Delimiter to split the string by
+	 * @returns {Array<String>} Array containing the string split by the delimiter
+	 */
 	function split(text: string, delimiter: string): Array<String>;
+	/**
+	 * Strip all whitespace from both sides of the string
+	 *
+	 * @param {string} text String to strip
+	 * @returns {string} Stripped string
+	 */
 	function strip(text: string): string;
 }
 
