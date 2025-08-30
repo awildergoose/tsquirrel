@@ -134,12 +134,12 @@ import { deepPrintTable, pushPlayer } from "./std";
 // const v = Vector(2, 3, 5);
 // v.mul(5);
 
-hookGameEvent("weapon_fire", (params) => {
+hookGameEvent("infected_hurt", (params) => {
 	deepPrintTable(params);
 });
 
 hookGameEvent("weapon_fire", (params) => {
 	const player = GetPlayerFromUserID(params.userid);
 
-	pushPlayer(player, player.EyeAngles().Forward(), 5000);
+	pushPlayer(player, player.EyeAngles().Forward(), 2000);
 });
