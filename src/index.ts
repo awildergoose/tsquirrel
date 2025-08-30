@@ -309,7 +309,13 @@ function handleCallExpression(callExpr: CallExpression) {
 			.getArguments()
 			.map((a) => handleExpression(a as Expression));
 
-		if (typeName === "Vector") {
+		if (
+			typeName === "Vector" ||
+			typeName === "QAngle" ||
+			typeName === "Vector2D" ||
+			typeName === "Vector4D" ||
+			typeName === "Quaternion"
+		) {
 			if (method === "add" && args.length === 1) {
 				return `${target} + ${args[0]}`;
 			}
