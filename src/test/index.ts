@@ -1,135 +1,138 @@
-import { deepPrintTable } from "./std";
+// import { deepPrintTable } from "./std";
 
-const myTable = {
-	a: 3,
-	b: 7,
-	[6]: "six",
-	func() {
-		return this.a + this.b;
-	},
-	nestedTable: {
-		z: "a string",
-	},
-};
+// const myTable = {
+// 	a: 3,
+// 	b: 7,
+// 	[6]: "six",
+// 	func() {
+// 		return this.a + this.b;
+// 	},
+// 	nestedTable: {
+// 		z: "a string",
+// 	},
+// };
 
-myTable.a = 2;
-myTable["a"] = 2;
+// myTable.a = 2;
+// myTable["a"] = 2;
 
-const a = 5;
-let b = "hello";
+// const a = 5;
+// let b = "hello";
 
-const PI = 3.14159;
+// const PI = 3.14159;
 
-function add(x: number, y: number) {
-	const result = x + y;
-	return result;
-}
+// function add(x: number, y: number) {
+// 	const result = x + y;
+// 	return result;
+// }
 
-print(`${ftos(acall(add, [{}, 3, 2]))}\n`);
+// print(`${ftos(acall(add, [{}, 3, 2]))}\n`);
 
-function circleArea(r: number) {
-	return PI * r * r;
-}
+// function circleArea(r: number) {
+// 	return PI * r * r;
+// }
 
-for (let i = 0; i < 3; i++) {
-	print(`i = ${i}\n`);
-}
+// for (let i = 0; i < 3; i++) {
+// 	print(`i = ${i}\n`);
+// }
 
-b = "new string";
+// b = "new string";
 
-let c = [1, 2, 3];
-c = [2, 4];
+// let c = [1, 2, 3];
+// c = [2, 4];
 
-add(2, 4);
+// add(2, 4);
 
-for (let i = 0; i < 3; i++) {
-	print("Hi!!!\n");
-}
+// for (let i = 0; i < 3; i++) {
+// 	print("Hi!!!\n");
+// }
 
-class Person {
-	name: string;
-	age: number;
-	lo: boolean;
+// class Person {
+// 	name: string;
+// 	age: number;
+// 	lo: boolean;
 
-	constructor(name: string, age: number) {
-		this.name = name;
-		this.age = age;
-		this.lo = true;
-	}
+// 	constructor(name: string, age: number) {
+// 		this.name = name;
+// 		this.age = age;
+// 		this.lo = true;
+// 	}
 
-	greet() {
-		print(`hi, i'm ${this.name}`);
-	}
-}
+// 	greet() {
+// 		print(`hi, i'm ${this.name}`);
+// 	}
+// }
 
-if (a == 9 + 10) {
-	print("YAY");
-} else {
-	print("NO");
-}
+// if (a == 9 + 10) {
+// 	print("YAY");
+// } else {
+// 	print("NO");
+// }
 
-const d: number[] = [1, 2, 3];
+// const d: number[] = [1, 2, 3];
 
-d.apply((v) => {
-	print(`ok ${v}!!\n`);
-});
+// d.apply((v) => {
+// 	print(`ok ${v}!!\n`);
+// });
 
-print("wah");
-print(`${ftos(1.2)}\n`);
-print(format("Hello, world! %d\n", 5));
+// print("wah");
+// print(`${ftos(1.2)}\n`);
+// print(format("Hello, world! %d\n", 5));
 
-let sometest = 5;
-sometest += 2;
-sometest -= 2;
-sometest *= 2;
-sometest /= 2;
-print(format("sometest: %d\n", sometest));
+// let sometest = 5;
+// sometest += 2;
+// sometest -= 2;
+// sometest *= 2;
+// sometest /= 2;
+// print(format("sometest: %d\n", sometest));
 
-function defaultTest(a = 5, b = 3) {
-	print(format("%d %d\n", a, b));
-}
+// function defaultTest(a = 5, b = 3) {
+// 	print(format("%d %d\n", a, b));
+// }
 
-defaultTest(1, 2);
-defaultTest(3);
-defaultTest();
+// defaultTest(1, 2);
+// defaultTest(3);
+// defaultTest();
 
-class Foo {
-	static some: number;
-}
+// class Foo {
+// 	static some: number;
+// }
 
-let somenumber = 0;
-while (somenumber++ < 5) {
-	print("what?\n");
-}
+// let somenumber = 0;
+// while (somenumber++ < 5) {
+// 	print("what?\n");
+// }
 
-const table: number[] = [1, 2, 3];
-for (const ent in table) {
-	print(format("Hi %d\n", ent));
-}
+// const table: number[] = [1, 2, 3];
+// for (const ent in table) {
+// 	print(format("Hi %d\n", ent));
+// }
 
-print(format("%s\n", type(table)));
+// print(format("%s\n", type(table)));
 
-// const t: Vector = Vector(5, 5);
-// print(format("%f\n", t.Length()));
+// // const t: Vector = Vector(5, 5);
+// // print(format("%f\n", t.Length()));
 
-deepPrintTable({
-	v: "hello",
-	n: 2,
-	t: true,
-	we: {
-		thrive: true,
-		magically: {
-			help: true,
-		},
-	},
-});
+// deepPrintTable({
+// 	v: "hello",
+// 	n: 2,
+// 	t: true,
+// 	we: {
+// 		thrive: true,
+// 		magically: {
+// 			help: true,
+// 		},
+// 	},
+// });
 
-const x = 3;
+// const x = 3;
 
-if (2 + 3 === 5) {
-	print("K");
-} else if (2 + 3 == 6) {
-	print("L");
-} else if (x >= 3) {
-	print("N");
-} else print("V");
+// if (2 + 3 === 5) {
+// 	print("K");
+// } else if (2 + 3 == 6) {
+// 	print("L");
+// } else if (x >= 3) {
+// 	print("N");
+// } else print("V");
+
+const v = Vector(2, 3, 5);
+v.mul(5);

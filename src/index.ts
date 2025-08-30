@@ -293,13 +293,41 @@ function handleBinaryExpression(node: BinaryExpression): string {
 }
 
 function handleCallExpression(callExpr: CallExpression) {
+	const exprNode = callExpr.getExpression();
+
+	if (exprNode.isKind(ts.SyntaxKind.PropertyAccessExpression)) {
+		const typeName = exprNode
+			.getExpression()
+			.getType()
+			.getSymbolOrThrow()
+			.getName();
+		const method = exprNode
+			.asKindOrThrow(ts.SyntaxKind.PropertyAccessExpression)
+			.getName();
+		const target = handleExpression(exprNode.getExpression());
+		const args = callExpr
+			.getArguments()
+			.map((a) => handleExpression(a as Expression));
+
+		if (typeName === "Vector") {
+			if (method === "add" && args.length === 1) {
+				return `${target} + ${args[0]}`;
+			}
+			if (method === "sub" && args.length === 1) {
+				return `${target} - ${args[0]}`;
+			}
+			if (method === "mul" && args.length === 1) {
+				return `${target} * ${args[0]}`;
+			}
+		}
+	}
+
 	const name = handleExpression(callExpr.getExpression());
 	const args = callExpr
 		.getArguments()
 		.map((node) => handleExpression(node as Expression));
 
 	let expectedParamCount = args.length;
-	const exprNode = callExpr.getExpression();
 
 	if (exprNode.getKind() === ts.SyntaxKind.Identifier) {
 		const decl = exprNode
