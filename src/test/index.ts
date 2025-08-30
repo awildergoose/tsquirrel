@@ -1,5 +1,3 @@
-// import { deepPrintTable } from "./std";
-
 import { deepPrintTable } from "./std";
 
 // const myTable = {
@@ -138,4 +136,8 @@ import { deepPrintTable } from "./std";
 
 hook("OnGameEvent_infected_hurt", (params) => {
 	deepPrintTable(params);
+});
+
+hookGameEvent("ammo_pickup", (data) => {
+	print(data.userid);
 });

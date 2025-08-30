@@ -331,8 +331,12 @@ function handleCallExpression(callExpr: CallExpression) {
 
 	if (
 		exprNode.isKind(ts.SyntaxKind.Identifier) &&
-		exprNode.getText() === "hook"
+		(exprNode.getText() === "hook" ||
+			exprNode.getText() === "hookGameEvent")
 	) {
+		const hookPrefix =
+			exprNode.getText() === "hookGameEvent" ? "OnGameEvent_" : "";
+
 		const args = callExpr.getArguments();
 		if (args.length === 2) {
 			const hookNameNode = args[0]!;
@@ -369,14 +373,14 @@ function handleCallExpression(callExpr: CallExpression) {
 					)}; }`;
 				}
 
-				return `function ${hookName}(${params}) ${body}\n`;
+				return `function ${hookPrefix}${hookName}(${params}) ${body}\n`;
 			}
 
-			throw new Error(`hook() callback is not a valid expression`);
+			throw new Error(`hook callback is not a valid expression`);
 		} else {
 			const pos = callExpr.getStartLineNumber();
 			throw new Error(
-				`hook() expects exactly 2 arguments at line ${pos}, got ${args.length}`
+				`hook expects exactly 2 arguments at line ${pos}, got ${args.length}`
 			);
 		}
 	}

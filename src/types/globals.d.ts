@@ -1,6 +1,7 @@
+import { GameEventMap, GameEventName } from "./gameEvents";
+
 type HookArgsMap = {
 	Update: [];
-	OnPlayerConnect: [player: any];
 };
 
 export type KnownHook = keyof HookArgsMap;
@@ -142,6 +143,11 @@ declare global {
 	): void;
 
 	declare function hook(to: string, callback: (...args: any[]) => void): void;
+
+	declare function hookGameEvent<T extends GameEventName>(
+		event: T,
+		callback: (data: GameEventMap[T]) => void
+	): void;
 
 	// Standard library
 	function acall(fn: Function, args: any[]): any;
