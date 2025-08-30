@@ -1,4 +1,4 @@
-// import { deepPrintTable } from "./std";
+import { deepPrintTable } from "./std";
 
 // const myTable = {
 // 	a: 3,
@@ -112,17 +112,17 @@
 // // const t: Vector = Vector(5, 5);
 // // print(format("%f\n", t.Length()));
 
-// deepPrintTable({
-// 	v: "hello",
-// 	n: 2,
-// 	t: true,
-// 	we: {
-// 		thrive: true,
-// 		magically: {
-// 			help: true,
-// 		},
-// 	},
-// });
+deepPrintTable({
+	v: "hello",
+	n: 2,
+	t: true,
+	we: {
+		thrive: true,
+		magically: {
+			help: true,
+		},
+	},
+});
 
 // const x = 3;
 

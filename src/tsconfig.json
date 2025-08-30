@@ -27,6 +27,8 @@
         "noPropertyAccessFromIndexSignature": false
     },
     "include": [
-        "./index.ts"
+        "./compiler.ts",
+        "./index.ts",
+        "./logger.ts"
     ]
 }
