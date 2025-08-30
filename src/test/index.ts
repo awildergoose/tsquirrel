@@ -1,3 +1,5 @@
+import { deepPrintTable } from "./std";
+
 let myTable = {
 	a: 3,
 	b: 7,
@@ -109,28 +111,6 @@ print(format("%s\n", type(table)));
 
 // const t: Vector = Vector(5, 5);
 // print(format("%f\n", t.Length()));
-
-function deepPrintTable(debugTable: any, prefix = "") {
-	if (prefix == "") {
-		print(`${prefix}${debugTable}\n{\n`);
-		prefix = "   ";
-	}
-
-	//@ts-ignore TS1091
-	for (let idx, val in debugTable) {
-		if (typeOf(val) === "table") {
-			print(`${prefix}${idx} = \n${prefix}{\n`);
-			deepPrintTable(val, `${prefix}   `);
-			print(`${prefix}}\n`);
-		} else if (typeOf(val) === "string") {
-			print(`${prefix + idx}\t= "${val}"\n`);
-		} else {
-			print(`${prefix + idx}\t= ${val}\n`);
-		}
-	}
-
-	if (prefix == "   ") print("}" + "\n");
-}
 
 deepPrintTable({
 	v: "hello",

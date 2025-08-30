@@ -571,6 +571,10 @@ function compileNode(node: Node, inFunction = false): string {
 				node.asKindOrThrow(ts.SyntaxKind.ForInStatement)
 			);
 
+		// Automagically gets handled!
+		case ts.SyntaxKind.ImportDeclaration:
+			return "\n";
+
 		case ts.SyntaxKind.NumericLiteral:
 		case ts.SyntaxKind.StringLiteral:
 		case ts.SyntaxKind.Identifier:
@@ -590,8 +594,7 @@ function compileNode(node: Node, inFunction = false): string {
 }
 
 async function compileFile(file: SourceFile): Promise<string> {
-	const std = await Bun.file("std.nut").text();
-	let out = `${std}\n`;
+	let out = `dofile("std.nut")\n`;
 
 	file.forEachChild((node) => {
 		out += compileNode(node);
@@ -600,12 +603,45 @@ async function compileFile(file: SourceFile): Promise<string> {
 	return out;
 }
 
+function sortFilesByDependencies(files: SourceFile[]): SourceFile[] {
+	// map file → array of its direct dependencies
+	const deps = new Map<SourceFile, SourceFile[]>();
+
+	for (const f of files) {
+		const imports = f
+			.getImportDeclarations()
+			.map((d) => d.getModuleSpecifierSourceFile())
+			.filter((sf): sf is SourceFile => !!sf && files.includes(sf));
+		deps.set(f, imports);
+	}
+
+	const result: SourceFile[] = [];
+	const visited = new Set<SourceFile>();
+
+	function visit(file: SourceFile) {
+		if (visited.has(file)) return;
+		visited.add(file);
+		for (const dep of deps.get(file) ?? []) {
+			visit(dep);
+		}
+		result.push(file);
+	}
+
+	for (const f of files) {
+		visit(f);
+	}
+
+	return result;
+}
+
 async function compileProject(project: Project) {
 	console.time("compilation");
 
-	const files = project
+	const unsortedFiles = project
 		.getSourceFiles()
 		.filter((f) => !f.getFilePath().endsWith(".d.ts"));
+
+	const files = sortFilesByDependencies(unsortedFiles);
 
 	const outputs = await Promise.all(files.map((file) => compileFile(file)));
 	const output = outputs.join("\n");
