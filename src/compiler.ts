@@ -296,35 +296,39 @@ function handleCallExpression(callExpr: CallExpression) {
 	const exprNode = callExpr.getExpression();
 
 	if (exprNode.isKind(ts.SyntaxKind.PropertyAccessExpression)) {
-		const typeName = exprNode
-			.getExpression()
-			.getType()
-			.getSymbolOrThrow()
-			.getName();
-		const method = exprNode
-			.asKindOrThrow(ts.SyntaxKind.PropertyAccessExpression)
-			.getName();
-		const target = handleExpression(exprNode.getExpression());
-		const args = callExpr
-			.getArguments()
-			.map((a) => handleExpression(a as Expression));
+		const symbol = exprNode.getExpression().getType().getSymbol();
 
-		// Due to the way TypeScript works, we can't define custom operator overloads
-		// So, the solution is to make types for add, sub, mul
-		// but replace them in compile-time
-		if (
-			["Vector", "QAngle", "Vector2D", "Vector4D", "Quaternion"].includes(
-				typeName
-			)
-		) {
-			if (method === "add" && args.length === 1) {
-				return `${target} + ${args[0]}`;
-			}
-			if (method === "sub" && args.length === 1) {
-				return `${target} - ${args[0]}`;
-			}
-			if (method === "mul" && args.length === 1) {
-				return `${target} * ${args[0]}`;
+		if (symbol) {
+			const typeName = symbol.getName();
+			const method = exprNode
+				.asKindOrThrow(ts.SyntaxKind.PropertyAccessExpression)
+				.getName();
+			const target = handleExpression(exprNode.getExpression());
+			const args = callExpr
+				.getArguments()
+				.map((a) => handleExpression(a as Expression));
+
+			// Due to the way TypeScript works, we can't define custom operator overloads
+			// So, the solution is to make types for add, sub, mul
+			// but replace them in compile-time
+			if (
+				[
+					"Vector",
+					"QAngle",
+					"Vector2D",
+					"Vector4D",
+					"Quaternion",
+				].includes(typeName)
+			) {
+				if (method === "add" && args.length === 1) {
+					return `${target} + ${args[0]}`;
+				}
+				if (method === "sub" && args.length === 1) {
+					return `${target} - ${args[0]}`;
+				}
+				if (method === "mul" && args.length === 1) {
+					return `${target} * ${args[0]}`;
+				}
 			}
 		}
 	}
