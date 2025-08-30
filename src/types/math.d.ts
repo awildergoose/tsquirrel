@@ -1,26 +1,22 @@
-interface Math {
-	abs(value: number): number;
-	acos(angle: number): number;
-	asin(angle: number): number;
-	atan(value: number): number;
-	atan2(y: number, x: number): number;
-	ceil(value: number): number;
-	cos(angle: number): number;
-	exp(exponent: number): number;
-	fabs(value: number): number;
-	floor(value: number): number;
-	log(value: number): number;
-	log10(value: number): number;
-	pow(base: number, exponent: number): number;
-	rand(): number;
-	sin(angle: number): number;
-	sqrt(value: number): number;
-	srand(seed: number): void;
-	tan(angle: number): number;
-}
-
 declare global {
-	declare let math: Math;
+	function abs(value: number): number;
+	function acos(angle: number): number;
+	function asin(angle: number): number;
+	function atan(value: number): number;
+	function atan2(y: number, x: number): number;
+	function ceil(value: number): number;
+	function cos(angle: number): number;
+	function exp(exponent: number): number;
+	function fabs(value: number): number;
+	function floor(value: number): number;
+	function log(value: number): number;
+	function log10(value: number): number;
+	function pow(base: number, exponent: number): number;
+	function rand(): number;
+	function sin(angle: number): number;
+	function sqrt(value: number): number;
+	function srand(seed: number): void;
+	function tan(angle: number): number;
 }
 
 export {};

@@ -47,17 +47,17 @@ export function getPlayerYawRad(player: CBaseEntity): number {
 
 export function getPlayerLeft(player: CBaseEntity): Vector {
 	const yaw = getPlayerYawRad(player);
-	return Vector(-math.cos(yaw), -math.sin(yaw), 0);
+	return Vector(-cos(yaw), -sin(yaw), 0);
 }
 
 export function getPlayerRight(player: CBaseEntity): Vector {
 	const yaw = getPlayerYawRad(player);
-	return Vector(math.cos(yaw), math.sin(yaw), 0);
+	return Vector(cos(yaw), sin(yaw), 0);
 }
 
 export function getPlayerForward(player: CBaseEntity): Vector {
 	const yaw = getPlayerYawRad(player);
-	return Vector(math.sin(yaw), math.cos(yaw), 0);
+	return Vector(sin(yaw), cos(yaw), 0);
 }
 
 export function pushPlayer(
