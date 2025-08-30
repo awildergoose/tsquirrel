@@ -1,6 +1,6 @@
 import { deepPrintTable } from "./std";
 
-let myTable = {
+const myTable = {
 	a: 3,
 	b: 7,
 	[6]: "six",
@@ -21,7 +21,7 @@ let b = "hello";
 const PI = 3.14159;
 
 function add(x: number, y: number) {
-	let result = x + y;
+	const result = x + y;
 	return result;
 }
 
@@ -32,7 +32,7 @@ function circleArea(r: number) {
 }
 
 for (let i = 0; i < 3; i++) {
-	print("i = " + i + "\n");
+	print(`i = ${i}\n`);
 }
 
 b = "new string";
@@ -58,7 +58,7 @@ class Person {
 	}
 
 	greet() {
-		print("hi, i'm " + this.name);
+		print(`hi, i'm ${this.name}`);
 	}
 }
 
@@ -68,7 +68,7 @@ if (a == 9 + 10) {
 	print("NO");
 }
 
-let d: number[] = [1, 2, 3];
+const d: number[] = [1, 2, 3];
 
 d.apply((v) => {
 	print(`ok ${v}!!\n`);

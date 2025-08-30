@@ -594,7 +594,8 @@ function compileNode(node: Node, inFunction = false): string {
 }
 
 async function compileFile(file: SourceFile): Promise<string> {
-	let out = `dofile("std.nut")\n`;
+	const std = await Bun.file("std.nut").text();
+	let out = `${std}\n`;
 
 	file.forEachChild((node) => {
 		out += compileNode(node);

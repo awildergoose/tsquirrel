@@ -17,5 +17,5 @@ export function deepPrintTable(debugTable: any, prefix = "") {
 		}
 	}
 
-	if (prefix == "   ") print("}" + "\n");
+	if (prefix == "   ") print("}\n");
 }
