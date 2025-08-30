@@ -369,6 +369,8 @@ function handleCallExpression(callExpr: CallExpression) {
 				}
 
 				return `function ${hookName}(${params}) ${body}\n`;
+			} else {
+				throw new Error(`hook() callback is not a valid expression`);
 			}
 		} else {
 			const pos = callExpr.getStartLineNumber();

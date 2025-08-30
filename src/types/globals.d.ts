@@ -1,3 +1,11 @@
+type HookArgsMap = {
+	Update: [];
+	OnPlayerConnect: [player: any];
+};
+
+export type KnownHook = keyof HookArgsMap;
+export type Hook = KnownHook | (string & {});
+
 export type SquirrelType =
 	| "null"
 	| "integer"
@@ -53,63 +61,6 @@ declare global {
 		tolower(): string;
 		toupper(): string;
 	}
-
-	function acall(fn: Function, args: any[]): any;
-	function bindenv(fn: Function, contextObject: any): any;
-	function pacall(fn: Function, arguments: any[]): any;
-
-	/**
-	 * Print to console without a new line
-	 *
-	 * @param {unknown} text What to print
-	 */
-	function print(text: unknown): void;
-
-	/**
-	 * Convert a float to an integer
-	 *
-	 * @param {number} float Float to convert
-	 * @returns {string} Float as an integer
-	 */
-	function ftoi(float: number): number;
-	/**
-	 * Convert a float to a string
-	 *
-	 * @param {number} float Float to convert
-	 * @returns {string} Float as a string
-	 */
-	function ftos(float: number): string;
-	/**
-	 * Convert a float to a character
-	 *
-	 * @param {number} float Float to convert
-	 * @returns {string} Float as a character
-	 */
-	function ftoc(float: number): string;
-
-	/**
-	 * Convert an integer to a character
-	 *
-	 * @param {number} int Number to convert
-	 * @returns {string} Number as a character
-	 */
-	function itoc(int: number): string;
-	/**
-	 * Convert an integer to a float
-	 *
-	 * @param {number} int Number to convert
-	 * @returns {number} Number as a string
-	 */
-	function itof(int: number): number;
-	/**
-	 * Convert an integer to a string
-	 *
-	 * @param {number} int Number to convert
-	 * @returns {string} Number as a string
-	 */
-	function itos(int: number): string;
-
-	function typeOf(obj: any): SquirrelType;
 
 	/**
 	 * Format specifiers:
@@ -184,8 +135,75 @@ declare global {
 	function suspend(returnValue: any): void;
 	function type(obj: any): string;
 
-	// Compiles to function `to`(`args`) { /* callback */ }
+	// Compiler-specific
+	declare function hook<K extends KnownHook>(
+		to: K,
+		callback: (...args: HookArgsMap[K]) => void
+	): void;
+
 	declare function hook(to: string, callback: (...args: any[]) => void): void;
+
+	// Standard library
+	function acall(fn: Function, args: any[]): any;
+	function bindenv(fn: Function, contextObject: any): any;
+	function pacall(fn: Function, arguments: any[]): any;
+
+	/**
+	 * Print to console without a new line
+	 *
+	 * @param {unknown} text What to print
+	 */
+	function print(text: unknown): void;
+
+	/**
+	 * Convert a float to an integer
+	 *
+	 * @param {number} float Float to convert
+	 * @returns {string} Float as an integer
+	 */
+	function ftoi(float: number): number;
+	/**
+	 * Convert a float to a string
+	 *
+	 * @param {number} float Float to convert
+	 * @returns {string} Float as a string
+	 */
+	function ftos(float: number): string;
+	/**
+	 * Convert a float to a character
+	 *
+	 * @param {number} float Float to convert
+	 * @returns {string} Float as a character
+	 */
+	function ftoc(float: number): string;
+
+	/**
+	 * Convert an integer to a character
+	 *
+	 * @param {number} int Number to convert
+	 * @returns {string} Number as a character
+	 */
+	function itoc(int: number): string;
+	/**
+	 * Convert an integer to a float
+	 *
+	 * @param {number} int Number to convert
+	 * @returns {number} Number as a string
+	 */
+	function itof(int: number): number;
+	/**
+	 * Convert an integer to a string
+	 *
+	 * @param {number} int Number to convert
+	 * @returns {string} Number as a string
+	 */
+	function itos(int: number): string;
+
+	/**
+	 * Equivalent of Squirrel's typeof
+	 * @param obj
+	 */
+	function typeOf(obj: any): SquirrelType;
 }
 
 export {};
