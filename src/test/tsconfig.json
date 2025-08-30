@@ -10,6 +10,7 @@
         "./**/*.ts",
         "./globals.d.ts",
         "./math.d.ts",
+        "./regexp.d.ts",
         "./valve.d.ts",
     ]
 }
