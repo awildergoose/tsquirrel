@@ -12,5 +12,6 @@
         "../types/math.d.ts",
         "../types/regexp.d.ts",
         "../types/valve.d.ts",
+        "../types/l4d2.d.ts"
     ]
 }
