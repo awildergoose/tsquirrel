@@ -138,9 +138,10 @@ hook("OnGameEvent_infected_hurt", (params) => {
 	deepPrintTable(params);
 });
 
-hookGameEvent("player_shoot", (params) => {
-	print("player shoot");
+hookGameEvent("weapon_fire", (params) => {
+	print("player shoot\n");
 
 	const player = GetPlayerFromUserID(params.userid);
-	player.SetHealth(player.GetHealth() - 10);
+	player.UseAdrenaline(60);
+	// player.TakeDamage(10, 0, player);
 });

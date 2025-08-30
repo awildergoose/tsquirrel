@@ -380,10 +380,7 @@ export interface CEntities {
 	 * @param class string
 	 * @returns handle
 	 */
-	FindByClassname(
-		previous: SquirrelHandle,
-		className: string
-	): SquirrelHandle;
+	FindByClassname(previous: CBaseEntity, className: string): CBaseEntity;
 
 	/**
 	 * Find the entity with the given class name nearest to the specified point.
@@ -396,7 +393,7 @@ export interface CEntities {
 		className: string,
 		origin: Vector,
 		radius: number
-	): SquirrelHandle;
+	): CBaseEntity;
 
 	/**
 	 * Find entities by class name within a radius, while within a set radius.
@@ -407,11 +404,11 @@ export interface CEntities {
 	 * @returns handle
 	 */
 	FindByClassnameWithin(
-		previous: SquirrelHandle,
+		previous: CBaseEntity,
 		className: string,
 		origin: Vector,
 		radius: number
-	): SquirrelHandle;
+	): CBaseEntity;
 
 	/**
 	 * Find entities by a model path name.
@@ -419,7 +416,7 @@ export interface CEntities {
 	 * @param filename string
 	 * @returns handle
 	 */
-	FindByModel(previous: SquirrelHandle, filename: string): SquirrelHandle;
+	FindByModel(previous: CBaseEntity, filename: string): CBaseEntity;
 
 	/**
 	 * Find entities by targetname. Special ones including !bill will work.
@@ -427,7 +424,7 @@ export interface CEntities {
 	 * @param name string
 	 * @returns handle
 	 */
-	FindByName(previous: SquirrelHandle, name: string): SquirrelHandle;
+	FindByName(previous: CBaseEntity, name: string): CBaseEntity;
 
 	/**
 	 * Find entities by targetname nearest to a point, while within a set radius. Special ones including !bill will work.
@@ -440,7 +437,7 @@ export interface CEntities {
 		name: string,
 		origin: Vector,
 		radius: number
-	): SquirrelHandle;
+	): CBaseEntity;
 
 	/**
 	 * Find entities by targetname within a radius. Special ones including !bill will work.
@@ -451,11 +448,11 @@ export interface CEntities {
 	 * @returns handle
 	 */
 	FindByNameWithin(
-		previous: SquirrelHandle,
+		previous: CBaseEntity,
 		name: string,
 		origin: Vector,
 		radius: number
-	): SquirrelHandle;
+	): CBaseEntity;
 
 	/**
 	 * Find entities by its target.
@@ -463,7 +460,7 @@ export interface CEntities {
 	 * @param targetname string
 	 * @returns handle
 	 */
-	FindByTarget(previous: SquirrelHandle, targetname: string): SquirrelHandle;
+	FindByTarget(previous: CBaseEntity, targetname: string): CBaseEntity;
 
 	/**
 	 * Returns entities within a set radius.
@@ -473,23 +470,23 @@ export interface CEntities {
 	 * @returns handle
 	 */
 	FindInSphere(
-		previous: SquirrelHandle,
+		previous: CBaseEntity,
 		origin: Vector,
 		radius: number
-	): SquirrelHandle;
+	): CBaseEntity;
 
 	/**
 	 * The first entity that spawned (Always worldspawn). Can be used to begin an iteration for a list of entities.
 	 * @returns handle
 	 */
-	First(): SquirrelHandle;
+	First(): CBaseEntity;
 
 	/**
 	 * At the given reference of a previously-found entity, returns the next one after it in the list.
 	 * @param previous handle
 	 * @returns handle
 	 */
-	Next(previous: SquirrelHandle): SquirrelHandle;
+	Next(previous: CBaseEntity): CBaseEntity;
 
 	/**
 	 * Whether the handle for Entities is a valid handle.
@@ -1111,7 +1108,7 @@ Example usage:
 for (local child = entity.FirstMoveChild(); child != null; child = child.NextMovePeer())
  * @returns handle
  */
-	FirstMoveChild(): SquirrelHandle;
+	FirstMoveChild(): CBaseEntity;
 
 	/**
 	 * Returns the orientation of the entity in the world.
@@ -1213,7 +1210,7 @@ Can return value for expired contexts
 	 * If in hierarchy, retrieves the entity's parent
 	 * @returns handle
 	 */
-	GetMoveParent(): SquirrelHandle;
+	GetMoveParent(): CBaseEntity;
 
 	/**
 	 * Returns the targetname of the entity.
@@ -1231,7 +1228,7 @@ Can return value for expired contexts
 	 * Get the owner entity, if there is one.
 	 * @returns handle
 	 */
-	GetOwnerEntity(): SquirrelHandle;
+	GetOwnerEntity(): CBaseEntity?;
 
 	/**
 	 * Get the entity name stripped of template unique decoration.
@@ -1243,7 +1240,7 @@ Can return value for expired contexts
 	 * If in hierarchy, walks up the hierarchy to find the root parent.
 	 * @returns handle
 	 */
-	GetRootMoveParent(): SquirrelHandle;
+	GetRootMoveParent(): CBaseEntity;
 
 	/**
  * Returns the name of the entity's think function.
@@ -1287,7 +1284,7 @@ Retrieve the actual script identifier with NetProps.GetPropString(ent, "m_iszScr
 	 * Returns the next child of this entity's parent. Used to continue iteration from FirstMoveChild().
 	 * @returns handle
 	 */
-	NextMovePeer(): SquirrelHandle;
+	NextMovePeer(): CBaseEntity;
 
 	/**
 	 * Takes duration, value for a temporary override
@@ -1633,14 +1630,14 @@ export interface CBaseFlex extends CBaseAnimating {
 	 * Returns the instance of the oldest active scene entity (if any).
 	 * @returns handle
 	 */
-	GetCurrentScene(): SquirrelHandle;
+	GetCurrentScene(): CBaseEntity;
 
 	/**
 	 * Returns the instance of the scene entity at the specified index.
 	 * @param index int
 	 * @returns handle
 	 */
-	GetSceneByIndex(index: number): SquirrelHandle;
+	GetSceneByIndex(index: number): CBaseEntity;
 
 	/**
 	 * Play the specified .vcd file, causing the related characters to speak and subtitles to play.
@@ -1689,7 +1686,7 @@ export interface CTerrorPlayer extends CBaseCombatCharacter {
 	 * Get the player's active weapon entity.
 	 * @returns handle
 	 */
-	GetActiveWeapon(): SquirrelHandle;
+	GetActiveWeapon(): CTerrorWeapon;
 
 	/**
 	 * Returns the time the character has been alive (only valid when alive).
@@ -2095,7 +2092,7 @@ export interface CBaseTrigger extends CBaseEntity {
 	 * @param entity handle
 	 * @returns bool
 	 */
-	IsTouching(entity: SquirrelHandle): boolean;
+	IsTouching(entity: CBaseEntity): boolean;
 }
 
 export interface AI_Response {
@@ -3519,7 +3516,7 @@ Using 0 for value parameter mistakenly converts it to empty string. Use "0" inst
 	 * @returns void
 	 */
 	function SetFakeClientConVarValue(
-		bot: SquirrelHandle,
+		bot: CTerrorPlayer,
 		cvar: string,
 		value: string
 	): void;
