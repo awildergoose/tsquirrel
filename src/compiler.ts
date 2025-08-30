@@ -4,6 +4,7 @@ import {
 	CallExpression,
 	ClassDeclaration,
 	ConditionalExpression,
+	EnumDeclaration,
 	Expression,
 	ExpressionStatement,
 	ForInStatement,
@@ -235,7 +236,6 @@ function handleExpression(node: Expression): string {
 			);
 		case ts.SyntaxKind.PrefixUnaryExpression:
 		case ts.SyntaxKind.PostfixUnaryExpression:
-		case ts.SyntaxKind.NumericLiteral:
 		case ts.SyntaxKind.StringLiteral:
 		case ts.SyntaxKind.ArrayLiteralExpression:
 		case ts.SyntaxKind.TrueKeyword:
@@ -243,6 +243,11 @@ function handleExpression(node: Expression): string {
 		case ts.SyntaxKind.NullKeyword:
 		case ts.SyntaxKind.ThisKeyword:
 			return node.getText();
+		case ts.SyntaxKind.NumericLiteral:
+			return node
+				.asKindOrThrow(ts.SyntaxKind.NumericLiteral)
+				.getLiteralValue()
+				.toString();
 		case ts.SyntaxKind.UndefinedKeyword:
 			return "null";
 		case ts.SyntaxKind.AsExpression:
@@ -635,6 +640,16 @@ function handleForOfStatement(node: ForOfStatement) {
 	return handleForInStatement(node as unknown as ForInStatement);
 }
 
+function handleEnumDeclaration(node: EnumDeclaration) {
+	const members = node.getMembers().map((member) => {
+		const initializer = member.getInitializer();
+		const value = initializer ? handleExpression(initializer) : "";
+		return `\t${member.getName()}${value ? ` = ${value}` : ""}`;
+	});
+
+	return `enum ${node.getName()} {\n${members.join(",\n")}\n}\n`;
+}
+
 function compileNode(node: Node, inFunction = false): string {
 	switch (node.getKind()) {
 		case ts.SyntaxKind.CallExpression:
@@ -703,13 +718,20 @@ function compileNode(node: Node, inFunction = false): string {
 			return handleBlockOrStatement(
 				node.asKindOrThrow(ts.SyntaxKind.Block)
 			);
+		case ts.SyntaxKind.EnumDeclaration:
+			return handleEnumDeclaration(
+				node.asKindOrThrow(ts.SyntaxKind.EnumDeclaration)
+			);
 		// Automagically gets handled!
 		case ts.SyntaxKind.ImportDeclaration:
 			return "\n";
 		// TypeScript types
 		case ts.SyntaxKind.TypeAliasDeclaration:
 			return "\n";
-
+		case ts.SyntaxKind.ThrowStatement:
+			return `throw ${handleExpression(
+				node.asKindOrThrow(ts.SyntaxKind.ThrowStatement).getExpression()
+			)}\n`;
 		case ts.SyntaxKind.NumericLiteral:
 		case ts.SyntaxKind.StringLiteral:
 		case ts.SyntaxKind.Identifier:

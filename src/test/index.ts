@@ -149,3 +149,18 @@ hookGameEvent("weapon_fire", (params) => {
 		print(val);
 	});
 });
+
+enum Color {
+	Red,
+	Green,
+	Blue,
+}
+
+enum ColorRGB {
+	Red = 0xff0000,
+	Green = 0x00ff00,
+	Blue = 0x0000ff,
+}
+
+const v = Color.Red;
+print(v);

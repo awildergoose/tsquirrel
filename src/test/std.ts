@@ -2,6 +2,7 @@ import { CBaseEntity } from "../types/l4d2";
 import { Vector } from "../types/valve";
 
 export const VECTOR_ZERO = Vector(0, 0, 0);
+export const VECTOR_ONE = Vector(1, 1, 1);
 
 export const VECTOR_UP = Vector(0, 0, 1);
 export const VECTOR_DOWN = Vector(0, 0, -1);
