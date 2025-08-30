@@ -328,6 +328,56 @@ function handleCallExpression(callExpr: CallExpression) {
 		}
 	}
 
+	if (
+		exprNode.isKind(ts.SyntaxKind.Identifier) &&
+		exprNode.getText() === "hook"
+	) {
+		const args = callExpr.getArguments();
+		if (args.length === 2) {
+			const hookNameNode = args[0]!;
+			const callbackNode = args[1]!;
+
+			const hookName =
+				hookNameNode.getKind() === ts.SyntaxKind.StringLiteral
+					? (hookNameNode as any).getLiteralText()
+					: handleExpression(hookNameNode as Expression);
+
+			if (
+				callbackNode.isKind(ts.SyntaxKind.ArrowFunction) ||
+				callbackNode.isKind(ts.SyntaxKind.FunctionExpression)
+			) {
+				const fn = callbackNode.asKindOrThrow(
+					callbackNode.getKind() === ts.SyntaxKind.ArrowFunction
+						? ts.SyntaxKind.ArrowFunction
+						: ts.SyntaxKind.FunctionExpression
+				);
+				const params = fn
+					.getParameters()
+					.map((p) => p.getName())
+					.join(", ");
+				let body = "";
+				if (fn.getBody().getKind() === ts.SyntaxKind.Block) {
+					fn.getBody().forEachChild((n) => {
+						body += compileNode(n, true);
+					});
+					body = `{\n${body}}`;
+				} else {
+					// single expression arrow
+					body = `{ return ${handleExpression(
+						fn.getBody() as Expression
+					)}; }`;
+				}
+
+				return `function ${hookName}(${params}) ${body}\n`;
+			}
+		} else {
+			const pos = callExpr.getStartLineNumber();
+			throw new Error(
+				`hook() expects exactly 2 arguments at line ${pos}, got ${args.length}`
+			);
+		}
+	}
+
 	const name = handleExpression(callExpr.getExpression());
 	const args = callExpr
 		.getArguments()

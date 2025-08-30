@@ -183,6 +183,9 @@ declare global {
 	function newthread(threadFunc: Function): Generator;
 	function suspend(returnValue: any): void;
 	function type(obj: any): string;
+
+	// Compiles to function `to`(`args`) { /* callback */ }
+	declare function hook(to: string, callback: (...args: any[]) => void): void;
 }
 
 export {};

@@ -137,6 +137,10 @@
 // const v = Vector(2, 3, 5);
 // v.mul(5);
 
-Update = () => {
-	Msg("meow\n");
-};
+// Update = () => {
+// 	Msg("meow\n");
+// };
+
+hook("Update", () => {
+	Msg("Meow\n");
+});

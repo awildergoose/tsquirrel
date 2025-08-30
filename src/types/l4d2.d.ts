@@ -3285,8 +3285,6 @@ Non-functional.
 	 * @returns void
 	 */
 	function SendToServerConsole(command: string): void;
-
-	var Update: (() => void) | undefined;
 }
 
 export {};
