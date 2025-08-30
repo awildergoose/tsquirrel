@@ -1,3 +1,6 @@
+import { QAngle, Vector } from "./valve";
+
+type SquirrelHandle = unknown;
 type table = any;
 
 export interface Convars {
@@ -29,7 +32,7 @@ export interface Convars {
 	 * @param arg value
 	 * @returns void
 	 */
-	SetValue(name: string, arg: value): void;
+	SetValue(name: string, arg: any): void;
 }
 
 export interface CDirector {
@@ -1144,7 +1147,7 @@ Can return value for expired contexts
  * @param name string
  * @returns variable
  */
-	GetContext(name: string): variable;
+	GetContext(name: string): any;
 
 	/**
 	 * Get a C++ EHANDLE reference of the entity. This is an opaque type not directly usable by Squirrel, not a normal script handle. Only necessary for CPointScriptUseTarget functions. ↓
@@ -2767,7 +2770,7 @@ export interface CPointScriptTemplate extends CBaseEntity {
 	 * @param arg handle
 	 * @returns void
 	 */
-	AddTemplate(arg: string, arg: SquirrelHandle): void;
+	AddTemplate(arg: string, arg2: SquirrelHandle): void;
 
 	/**
 	 * Cache the group spawn tables.
@@ -2775,7 +2778,7 @@ export interface CPointScriptTemplate extends CBaseEntity {
 	 * @param arg handle
 	 * @returns void
 	 */
-	SetGroupSpawnTables(arg: SquirrelHandle, arg: SquirrelHandle): void;
+	SetGroupSpawnTables(arg: SquirrelHandle, arg2: SquirrelHandle): void;
 }
 
 export interface CPointScriptUseTarget extends CBaseEntity {
@@ -2943,13 +2946,13 @@ export interface CSimpleCallChainer {
 
 export interface LateBinder {
 	// TODO: what the hell is this??
-	Begin(...args: unknown): unknown;
-	End(...args: unknown): unknown;
-	EstablishDelegation(...args: unknown): unknown;
-	HookRootMetamethod(...args: unknown): unknown;
-	UnhookRootMetamethod(...args: unknown): unknown;
-	RemoveDelegation(...args: unknown): unknown;
-	Resolve(...args: unknown): unknown;
+	Begin(...args: unknown[]): unknown;
+	End(...args: unknown[]): unknown;
+	EstablishDelegation(...args: unknown[]): unknown;
+	HookRootMetamethod(...args: unknown[]): unknown;
+	UnhookRootMetamethod(...args: unknown[]): unknown;
+	RemoveDelegation(...args: unknown[]): unknown;
+	Resolve(...args: unknown[]): unknown;
 
 	m_bindNamesStack: Array;
 	m_fixupSet: Array;
@@ -3015,8 +3018,8 @@ Example Expand
 	 */
 	function DebugDrawBox(
 		origin: Vector,
-		min: vector,
-		max: vector,
+		min: Vector,
+		max: Vector,
 		r: number,
 		g: number,
 		b: number,
@@ -3123,8 +3126,8 @@ Example Expand
 	 */
 	function DebugDrawLine_vCol(
 		start: Vector,
-		end: vector,
-		rgb: vector,
+		end: Vector,
+		rgb: Vector,
 		ztest: boolean,
 		duration: number
 	): void;
