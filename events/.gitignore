@@ -1,0 +1,9 @@
+# Due to copyright, I can't share the original .res files
+# You can get them yourself by opening the game's VPK in VPKEdit
+# and extracting resource/gameevents.res and resource/modevents.res and resource/serverevents.res
+gameevents.res
+gameevents.json
+modevents.res
+modevents.json
+serverevents.res
+serverevents.json

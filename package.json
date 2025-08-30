@@ -11,7 +11,8 @@
 	},
 	"scripts": {
 		"watch": "bun --watch src/index.ts --path src/test/tsconfig.json --watch",
-		"watchtest": "bun --watch src/testcompile.ts"
+		"watchtest": "bun --watch src/testcompile.ts",
+		"eventsjson": "bun events/convert.ts events/gameevents && bun events/convert.ts events/modevents && bun events/convert.ts events/serverevents"
 	},
 	"dependencies": {
 		"clipanion": "^4.0.0-rc.4",
