@@ -68,5 +68,5 @@ export function pushPlayer(
 ) {
 	const currentVel = player.GetVelocity();
 	const push = dir.mul(magnitude);
-	player.SetVelocity(Vector(push.x, push.y, currentVel.z));
+	player.SetVelocity(currentVel.add(push));
 }
