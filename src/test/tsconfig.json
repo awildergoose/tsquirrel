@@ -8,9 +8,9 @@
     },
     "include": [
         "./**/*.ts",
-        "./globals.d.ts",
-        "./math.d.ts",
-        "./regexp.d.ts",
-        "./valve.d.ts",
+        "../types/globals.d.ts",
+        "../types/math.d.ts",
+        "../types/regexp.d.ts",
+        "../types/valve.d.ts",
     ]
 }
