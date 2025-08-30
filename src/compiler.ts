@@ -629,6 +629,11 @@ function handleForOfStatement(node: ForOfStatement) {
 
 function compileNode(node: Node, inFunction = false): string {
 	switch (node.getKind()) {
+		case ts.SyntaxKind.CallExpression:
+			return handleCallExpression(
+				node.asKindOrThrow(ts.SyntaxKind.CallExpression)
+			);
+
 		case ts.SyntaxKind.VariableStatement:
 			return handleVariableStatement(
 				node.asKindOrThrow(ts.SyntaxKind.VariableStatement),
@@ -686,6 +691,10 @@ function compileNode(node: Node, inFunction = false): string {
 				node.asKindOrThrow(ts.SyntaxKind.ForOfStatement)
 			);
 
+		case ts.SyntaxKind.Block:
+			return handleBlockOrStatement(
+				node.asKindOrThrow(ts.SyntaxKind.Block)
+			);
 		// Automagically gets handled!
 		case ts.SyntaxKind.ImportDeclaration:
 			return "\n";
@@ -697,7 +706,6 @@ function compileNode(node: Node, inFunction = false): string {
 
 		case ts.SyntaxKind.EndOfFileToken:
 			return "// EOF\n";
-
 		default:
 			const filePath = node.getSourceFile().getFilePath();
 			const line = node.getStartLineNumber();
