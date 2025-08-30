@@ -111,7 +111,7 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 		const isLast = i === props.length - 1;
 
 		switch (property.getKind()) {
-			case ts.SyntaxKind.PropertyAssignment:
+			case ts.SyntaxKind.PropertyAssignment: {
 				const propertyTyped = property.asKindOrThrow(
 					ts.SyntaxKind.PropertyAssignment
 				);
@@ -119,21 +119,23 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 					propertyTyped.getInitializerOrThrow()
 				)}`;
 				break;
+			}
 
-			case ts.SyntaxKind.MethodDeclaration:
-				const methodTyped = property.asKindOrThrow(
+			case ts.SyntaxKind.MethodDeclaration: {
+				const method = property.asKindOrThrow(
 					ts.SyntaxKind.MethodDeclaration
 				);
-				out += `${methodTyped.getName()} = function(${handleParameters(
-					methodTyped.getParameters()
+				out += `${method.getName()} = function(${handleParameters(
+					method.getParameters()
 				)}) {\n`;
-				methodTyped.getBodyOrThrow().forEachChild((node) => {
+				method.getBodyOrThrow().forEachChild((node) => {
 					out += compileNode(node, true);
 				});
 				out += "}";
 				break;
+			}
 
-			default:
+			default: {
 				const filePath = property.getSourceFile().getFilePath();
 				const line = property.getStartLineNumber();
 				log.traceWarn(
@@ -141,6 +143,7 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 				);
 				out += `${property.getText()} /* Unknown object literal expression type ${property.getKindName()} */`;
 				break;
+			}
 		}
 
 		if (!isLast) out += ",\n";
@@ -192,9 +195,8 @@ function handleExpression(node: Expression): string {
 			);
 			let left = handleExpression(expr.getExpression());
 			const right = expr.getName();
-			let dot = ".";
+			const dot = left === "global" ? "" : ".";
 			if (left == "global") {
-				dot = "";
 				left = "::";
 			}
 			return `${left}${dot}${right}`;
@@ -284,9 +286,7 @@ function handleBinaryExpression(node: BinaryExpression): string {
 		return assignSlot(left, right, isGlobal);
 	}
 
-	if (op === "=") {
-		return `${left} = ${right}`;
-	}
+	if (op === "=") return `${left} = ${right}`;
 	if (op === "===") op = "==";
 
 	return `${left} ${op} ${right}`;
@@ -309,6 +309,9 @@ function handleCallExpression(callExpr: CallExpression) {
 			.getArguments()
 			.map((a) => handleExpression(a as Expression));
 
+		// Due to the way TypeScript works, we can't define custom operator overloads
+		// So, the solution is to make types for add, sub, mul
+		// but replace them in compile-time
 		if (
 			["Vector", "QAngle", "Vector2D", "Vector4D", "Quaternion"].includes(
 				typeName
@@ -438,7 +441,6 @@ function handleTemplateExpression(node: TemplateExpression): string {
 
 	node.getTemplateSpans().forEach((span) => {
 		const expr = handleExpression(span.getExpression());
-
 		const literal = span.getLiteral().getLiteralText();
 
 		out += ` + (${expr})`;
@@ -461,13 +463,12 @@ function handleFunctionDeclaration(node: FunctionDeclaration) {
 
 	fnParams.forEach((p) => {
 		const init = p.getInitializer();
-		if (init) {
+		if (init)
 			defaults.push(
 				`if (${p.getName()} == null) ${p.getName()} = ${handleExpression(
 					init
 				)};`
 			);
-		}
 	});
 
 	let out = "";
@@ -512,7 +513,7 @@ function handleClassDeclaration(node: ClassDeclaration) {
 	withScope(ScopeKind.ClassBody, () => {
 		node.getMembers().forEach((member) => {
 			switch (member.getKind()) {
-				case ts.SyntaxKind.Constructor:
+				case ts.SyntaxKind.Constructor: {
 					const ctor = member.asKindOrThrow(
 						ts.SyntaxKind.Constructor
 					);
@@ -525,21 +526,23 @@ function handleClassDeclaration(node: ClassDeclaration) {
 						out += "}\n";
 					});
 					break;
+				}
 
-				case ts.SyntaxKind.PropertyDeclaration:
-					const memberTyped = member.asKindOrThrow(
+				case ts.SyntaxKind.PropertyDeclaration: {
+					const declaration = member.asKindOrThrow(
 						ts.SyntaxKind.PropertyDeclaration
 					);
-					const memberName = memberTyped.getName();
-					const memberInit = memberTyped.getInitializer();
+					const memberName = declaration.getName();
+					const memberInit = declaration.getInitializer();
 					const init = memberInit
 						? handleExpression(memberInit)
 						: "null";
-					const prefix = memberTyped.isStatic() ? "static " : "";
+					const prefix = declaration.isStatic() ? "static " : "";
 					out += `${prefix}${memberName} = ${init}\n`;
 					break;
+				}
 
-				case ts.SyntaxKind.MethodDeclaration:
+				case ts.SyntaxKind.MethodDeclaration: {
 					const method = member.asKindOrThrow(
 						ts.SyntaxKind.MethodDeclaration
 					);
@@ -553,6 +556,7 @@ function handleClassDeclaration(node: ClassDeclaration) {
 						out += "}\n";
 					});
 					break;
+				}
 			}
 		});
 	});
