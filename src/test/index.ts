@@ -143,7 +143,7 @@ hookGameEvent("weapon_fire", (params) => {
 
 	pushPlayer(player, player.EyeAngles().Forward(), 2000);
 
-	new Promise((resolve, reject) => {
+	new Promise<number>((resolve, reject) => {
 		resolve(69);
 	}).then(
 		(val) => {
