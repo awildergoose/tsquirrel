@@ -422,12 +422,14 @@ function handleCallExpression(callExpr: CallExpression) {
 		const decl = exprNode
 			.asKindOrThrow(ts.SyntaxKind.Identifier)
 			.getDefinitionNodes()[0];
-		if (decl && ts.isFunctionDeclaration(decl.compilerNode)) {
+		if (decl && decl.getKind() === ts.SyntaxKind.FunctionDeclaration) {
 			expectedParamCount = decl
 				.asKindOrThrow(ts.SyntaxKind.FunctionDeclaration)
 				.getParameters().length;
 		}
 	}
+
+	// TODO: fix null defaults not applying to class methods
 
 	while (args.length < expectedParamCount) {
 		args.push("null");

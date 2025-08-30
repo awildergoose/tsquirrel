@@ -112,7 +112,7 @@ export class Promise<T> {
 
 	then(
 		onFulfilled: (val: T) => void,
-		onRejected?: (err: any) => void
+		onRejected: (err: any) => void
 	): Promise<T> {
 		if (this.state === "fulfilled" && this.value != null) {
 			onFulfilled(this.value);

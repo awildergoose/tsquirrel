@@ -145,7 +145,12 @@ hookGameEvent("weapon_fire", (params) => {
 
 	new Promise((resolve, reject) => {
 		resolve(69);
-	}).then((val) => {
-		print(val);
-	});
+	}).then(
+		(val) => {
+			print(val);
+		},
+		(err) => {
+			throw err;
+		}
+	);
 });
