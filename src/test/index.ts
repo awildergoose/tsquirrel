@@ -1,4 +1,4 @@
-import { deepPrintTable } from "./std";
+import { deepPrintTable, getPlayerLeft, pushPlayer } from "./std";
 
 // const myTable = {
 // 	a: 3,
@@ -142,6 +142,6 @@ hookGameEvent("weapon_fire", (params) => {
 	print("player shoot\n");
 
 	const player = GetPlayerFromUserID(params.userid);
-	player.UseAdrenaline(60);
-	// player.TakeDamage(10, 0, player);
+
+	pushPlayer(player, getPlayerLeft(player), 500);
 });

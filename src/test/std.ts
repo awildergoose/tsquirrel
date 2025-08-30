@@ -1,3 +1,19 @@
+import { CBaseEntity } from "../types/l4d2";
+import { Vector } from "../types/valve";
+
+export const VECTOR_ZERO = Vector(0, 0, 0);
+
+export const VECTOR_UP = Vector(0, 0, 1);
+export const VECTOR_DOWN = Vector(0, 0, -1);
+
+export const VECTOR_FORWARD = Vector(1, 0, 0);
+export const VECTOR_BACK = Vector(-1, 0, 0);
+
+export const VECTOR_LEFT = Vector(0, 1, 0);
+export const VECTOR_RIGHT = Vector(0, -1, 0);
+
+export const PI = 3.141592653589793;
+
 export function deepPrintTable(debugTable: any, prefix = "") {
 	if (prefix === "") {
 		print("{\n");
@@ -18,4 +34,38 @@ export function deepPrintTable(debugTable: any, prefix = "") {
 	}
 
 	if (prefix === "   ") print("}\n");
+}
+
+export function multiplyVector(a: Vector, b: Vector) {
+	return Vector(a.x * b.x, a.y * b.y, a.z * b.z);
+}
+
+export function getPlayerYawRad(player: CBaseEntity): number {
+	const angles = player.GetAngles();
+	return angles.y * (PI / 180);
+}
+
+export function getPlayerLeft(player: CBaseEntity): Vector {
+	const yaw = getPlayerYawRad(player);
+	return Vector(-math.cos(yaw), -math.sin(yaw), 0);
+}
+
+export function getPlayerRight(player: CBaseEntity): Vector {
+	const yaw = getPlayerYawRad(player);
+	return Vector(math.cos(yaw), math.sin(yaw), 0);
+}
+
+export function getPlayerForward(player: CBaseEntity): Vector {
+	const yaw = getPlayerYawRad(player);
+	return Vector(math.sin(yaw), math.cos(yaw), 0);
+}
+
+export function pushPlayer(
+	player: CBaseEntity,
+	dir: Vector,
+	magnitude: number
+) {
+	const currentVel = player.GetVelocity();
+	const push = dir.mul(magnitude);
+	player.SetVelocity(currentVel.add(push));
 }

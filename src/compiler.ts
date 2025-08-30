@@ -235,6 +235,7 @@ function handleExpression(node: Expression): string {
 					.asKindOrThrow(ts.SyntaxKind.NonNullExpression)
 					.getExpression()
 			);
+		case ts.SyntaxKind.PrefixUnaryExpression:
 		case ts.SyntaxKind.PostfixUnaryExpression:
 		case ts.SyntaxKind.NumericLiteral:
 		case ts.SyntaxKind.StringLiteral:
@@ -264,6 +265,12 @@ function handleExpression(node: Expression): string {
 			return handleExpressionStatement(
 				node.asKindOrThrow(ts.SyntaxKind.ExpressionStatement)
 			);
+		case ts.SyntaxKind.ParenthesizedExpression:
+			return `(${handleExpression(
+				node
+					.asKindOrThrow(ts.SyntaxKind.ParenthesizedExpression)
+					.getExpression()
+			)})`;
 		default: {
 			const filePath = node.getSourceFile().getFilePath();
 			const line = node.getStartLineNumber();
