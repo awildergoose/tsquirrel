@@ -138,6 +138,8 @@ hook("OnGameEvent_infected_hurt", (params) => {
 	deepPrintTable(params);
 });
 
-hookGameEvent("ammo_pickup", (data) => {
-	print(data.userid);
+hookGameEvent("player_chat", (data) => {
+	const player = GetPlayerFromUserID(data.userid);
+
+	player.SetHealth(player.GetHealth() - 100);
 });

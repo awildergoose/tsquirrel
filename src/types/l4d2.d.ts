@@ -3288,6 +3288,282 @@ Non-functional.
 	 * @returns void
 	 */
 	function SendToServerConsole(command: string): void;
+
+	/**
+	 * Sets a function in the entity's script to rerun by itself constantly.
+	 * @param entity handle
+	 * @param FuncName string
+	 * @returns void
+	 */
+	function AddThinkToEnt(entity: CBaseEntity, FuncName: string): void;
+
+	/**
+	 * Issues commands to bots based on a table configuration.
+	 * @param commandTable table
+	 * @returns bool
+	 */
+	function CommandABot(commandTable: table): boolean;
+
+	/**
+	 * Expected to be used inside an entity's scope. Calling ConnectOutputs(this) inside entity script will search for functions named [some output]Output and connects respective output to them. Example: function named OnStartTouchOutput will have OnStartTouch output connected to it. (the output name needs to begin with On for this to work)
+	 * @param arg table
+	 * @returns void
+	 */
+	function ConnectOutputs(arg: table): void;
+
+	/**
+	 * Adds entity I/O event to the event queue to be processed at appropriate time based on specified delay. The caller and activator argument takes a CBaseEntity script handle, and entities assigned can receive inputs with target set to !self, or !activator / !caller.
+	 * @param target string
+	 * @param action string
+	 * @param value string
+	 * @param delay float
+	 * @param activator handle
+	 * @param caller handle
+	 * @returns void
+	 */
+	function DoEntFire(
+		target: string,
+		action: string,
+		value: string,
+		delay: number,
+		activator: CBaseEntity,
+		caller: CBaseEntity
+	): void;
+
+	/**
+ * Wrapper for DoEntFire(). If called from an entity's script scope it sets caller to self.
+Bug*:
+Using 0 for value parameter mistakenly converts it to empty string. Use "0" instead to prevent that
+ * @param target string
+ * @param action string
+ * @param value string
+ * @param delay float
+ * @param activator handle
+ * @returns void
+ */
+	function EntFire(
+		target: string,
+		action: string,
+		value: string,
+		delay: number,
+		activator: CBaseEntity
+	): void;
+
+	/**
+	 * Drop a fire pool from the specified Vector location.
+	 * @param location Vector
+	 * @returns void
+	 */
+	function DropFire(location: Vector): void;
+
+	/**
+	 * Drop a spit pool from the specified Vector location.
+	 * @param location Vector
+	 * @returns void
+	 */
+	function DropSpit(location: Vector): void;
+
+	/**
+	 * Play named sound on an entity that has similar configurations to ambient_generic.
+	 * @param soundName string
+	 * @param volume float
+	 * @param soundlevel int
+	 * @param pitch int
+	 * @param entity handle
+	 * @returns void
+	 */
+	function EmitAmbientSoundOn(
+		soundName: string,
+		volume: number,
+		soundlevel: number,
+		pitch: number,
+		entity: CBaseEntity
+	): void;
+
+	/**
+	 * Play named sound only on the client for the specified player.
+	 * @param soundScript string
+	 * @param player handle
+	 * @returns void
+	 */
+	function EmitSoundOnClient(
+		soundScript: string,
+		player: CTerrorPlayer
+	): void;
+
+	/**
+	 * Play named sound on an entity.
+	 * @param soundScript string
+	 * @param entity handle
+	 * @returns void
+	 */
+	function EmitSoundOn(soundScript: string, entity: CBaseEntity): void;
+
+	/**
+	 * Returns the script handle for the given entity index.
+	 * @param entIndex int
+	 * @returns CBaseEntity
+	 */
+	function EntIndexToHScript(entIndex: number): CBaseEntity;
+
+	/**
+	 * Returns the trigger entity for the rescue area.
+	 * @returns CBaseTrigger
+	 */
+	function FindRescueAreaTrigger(): CBaseTrigger;
+
+	/**
+	 * Get the host player on a listen server.
+	 * @returns handle
+	 */
+	function GetListenServerHost(): SquirrelHandle;
+
+	/**
+	 * Returns the Friction on a player entity, meaningless if not a player.
+	 * @param player CTerrorPlayer
+	 * @returns float
+	 */
+	function GetFriction(player: CTerrorPlayer): number;
+
+	/**
+	 * Fills invTable with the specified player's inventory.
+	 * @param player CTerrorPLayer
+	 * @param invTable table
+	 * @returns void
+	 */
+	function GetInvTable(player: CTerrorPLayer, invTable: table): void;
+
+	/**
+	 * Returns the velocity of the entity.
+	 * @param entity handle
+	 * @returns Vector
+	 */
+	function GetPhysVelocity(entity: CBaseEntity): Vector;
+
+	/**
+	 * Returns the Angular velocity of the entity.
+	 * @param entity handle
+	 * @returns Vector
+	 */
+	function GetPhysAngularVelocity(entity: CBaseEntity): Vector;
+
+	/**
+	 * Given a character type, return the entity, or null.
+	 * @param characterType int
+	 * @returns handle
+	 */
+	function GetPlayerFromCharacter(characterType: number): CTerrorPlayer;
+
+	/**
+	 * Given a user id, return the entity, or null.
+	 * @param ID int
+	 * @returns handle
+	 */
+	function GetPlayerFromUserID(ID: number): CTerrorPlayer;
+
+	/**
+	 * Is this player/entity a bot.
+	 * @param player handle
+	 * @returns bool
+	 */
+	function IsPlayerABot(player: CTerrorPlayer): boolean;
+
+	/**
+	 * Object from world is put into the "Held" slot of the player. Warning: it will smoothly interpolate from where it is to the players hand - which is a bit goofy if it is on other side of level.
+	 * @param player handle
+	 * @param entity handle
+	 * @returns void
+	 */
+	function PickupObject(player: CTerrorPlayer, entity: CBaseEntity): void;
+
+	/**
+	 * Get a script handle of a player using the player index.
+	 * @param index int
+	 * @returns CTerrorPlayer
+	 */
+	function PlayerInstanceFromIndex(index: number): CTerrorPlayer;
+
+	/**
+	 * Precache an entity from KeyValues in a table.
+	 * @param keyvalues table
+	 * @returns bool
+	 */
+	function PrecacheEntityFromTable(keyvalues: table): boolean;
+
+	/**
+	 * Rotate a QAngle by another QAngle.
+	 * @param arg QAngle
+	 * @param arg QAngle
+	 * @returns QAngle
+	 */
+	function RotateOrientation(arg: QAngle, arg: QAngle): QAngle;
+
+	/**
+	 * Rotate the input Vector around an origin.
+	 * @param origin Vector
+	 * @param rotation QAngle
+	 * @param input Vector
+	 * @returns Vector
+	 */
+	function RotatePosition(
+		origin: Vector,
+		rotation: QAngle,
+		input: Vector
+	): Vector;
+
+	/**
+	 * Sets a USERINFO client ConVar for a fakeclient.
+	 * @param bot handle
+	 * @param cvar string
+	 * @param value string
+	 * @returns void
+	 */
+	function SetFakeClientConVarValue(
+		bot: SquirrelHandle,
+		cvar: string,
+		value: string
+	): void;
+
+	/**
+	 * Native function for entity spawning. See L4D2_EMS/Appendix:_Spawning.
+	 * @param classname string
+	 * @param keyvalues table
+	 * @returns handle
+	 */
+	function SpawnEntityFromTable(
+		classname: string,
+		keyvalues: table
+	): CBaseEntity;
+
+	/**
+	 * Native function for entity group spawning. See L4D2_EMS/Appendix:_Spawning.
+	 * @param entityGroup table
+	 * @returns bool
+	 */
+	function SpawnEntityGroupFromTable(entityGroup: table): boolean;
+
+	/**
+	 * Stop named sound on an entity that has similar configurations to ambient_generic.
+	 * @param soundName string
+	 * @param entity handle
+	 * @returns void
+	 */
+	function StopAmbientSoundOn(soundName: string, entity: CBaseEntity): void;
+
+	/**
+	 * Stop named sound on an entity.
+	 * @param soundScript string
+	 * @param entity handle
+	 * @returns void
+	 */
+	function StopSoundOn(soundScript: string, entity: CBaseEntity): void;
+
+	/**
+	 * Spawn an infected of liking, with a choice.
+	 * @param spawnTable table
+	 * @returns bool
+	 */
+	function ZSpawn(spawnTable: table): boolean;
 }
 
 export {};
