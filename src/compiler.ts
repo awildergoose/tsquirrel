@@ -19,6 +19,7 @@ import {
 	ReturnStatement,
 	SourceFile,
 	TemplateExpression,
+	TryStatement,
 	ts,
 	VariableDeclarationList,
 	VariableStatement,
@@ -650,6 +651,23 @@ function handleEnumDeclaration(node: EnumDeclaration) {
 	return `enum ${node.getName()} {\n${members.join(",\n")}\n}\n`;
 }
 
+function handleTryStatement(node: TryStatement) {
+	const tryBlock = handleBlockOrStatement(node.getTryBlock());
+	const catchClause = node.getCatchClause();
+	const catchBlock = catchClause
+		? handleBlockOrStatement(catchClause.getBlock())
+		: "";
+
+	if (catchBlock) {
+		const varName = catchClause!.getVariableDeclaration()?.getText();
+		return `try ${tryBlock} catch ${
+			varName && `(${varName})`
+		} ${catchBlock}\n`;
+	} else {
+		return `try ${tryBlock}\n`;
+	}
+}
+
 function compileNode(node: Node, inFunction = false): string {
 	switch (node.getKind()) {
 		case ts.SyntaxKind.CallExpression:
@@ -713,7 +731,6 @@ function compileNode(node: Node, inFunction = false): string {
 			return handleForOfStatement(
 				node.asKindOrThrow(ts.SyntaxKind.ForOfStatement)
 			);
-
 		case ts.SyntaxKind.Block:
 			return handleBlockOrStatement(
 				node.asKindOrThrow(ts.SyntaxKind.Block)
@@ -721,6 +738,10 @@ function compileNode(node: Node, inFunction = false): string {
 		case ts.SyntaxKind.EnumDeclaration:
 			return handleEnumDeclaration(
 				node.asKindOrThrow(ts.SyntaxKind.EnumDeclaration)
+			);
+		case ts.SyntaxKind.TryStatement:
+			return handleTryStatement(
+				node.asKindOrThrow(ts.SyntaxKind.TryStatement)
 			);
 		// Automagically gets handled!
 		case ts.SyntaxKind.ImportDeclaration:

@@ -143,24 +143,9 @@ hookGameEvent("weapon_fire", (params) => {
 
 	pushPlayer(player, player.EyeAngles().Forward(), 2000);
 
-	new Promise((resolve) => {
+	new Promise((resolve, reject) => {
 		resolve(69);
 	}).then((val) => {
 		print(val);
 	});
 });
-
-enum Color {
-	Red,
-	Green,
-	Blue,
-}
-
-enum ColorRGB {
-	Red = 0xff0000,
-	Green = 0x00ff00,
-	Blue = 0x0000ff,
-}
-
-const v = Color.Red;
-print(v);
