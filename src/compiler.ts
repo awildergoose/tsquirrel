@@ -277,7 +277,10 @@ function handleExpression(node: Expression): string {
 			return handleConditionalExpression(
 				node.asKindOrThrow(ts.SyntaxKind.ConditionalExpression)
 			);
-		// forstatement
+		case ts.SyntaxKind.ForStatement:
+			return handleForStatement(
+				node.asKindOrThrow(ts.SyntaxKind.ForStatement)
+			);
 		default: {
 			const filePath = node.getSourceFile().getFilePath();
 			const line = node.getStartLineNumber();
@@ -528,7 +531,7 @@ function handleForStatement(node: ForStatement) {
 		"local ",
 		"="
 	)}; ${handleExpression(condition)}; ${handleExpression(incrementor)}) {\n`;
-	out += handleBlockOrStatement(node);
+	out += handleBlockOrStatement(node.getStatement());
 	out += "}\n";
 	return out;
 }
