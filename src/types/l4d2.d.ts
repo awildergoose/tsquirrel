@@ -1,3 +1,5 @@
+type table = any;
+
 export interface Convars {
 	/**
 	 * Returns the convar value for the entindex as a string. Only works on client convars with the FCVAR_USERINFO flag. Convars without FCVAR_USERINFO or non-existent ones return empty string
@@ -1066,26 +1068,6 @@ export interface CScriptResponseCriteria {
 	 * @returns bool
 	 */
 	HasCriterion(entity: CBaseEntity, criteriaName: string): boolean;
-}
-
-declare global {
-	declare const Convars: Convars;
-	declare const Director: CDirector;
-	declare const Entities: CEntities;
-	declare const EntityOutputs: CScriptEntityOutputs;
-	declare const NavMesh: CNavMesh;
-	declare const NetProps: CNetPropManager;
-	declare const ResponseCriteria: CScriptResponseCriteria;
-
-	function CCallChainer(
-		functionPrefix: string,
-		scope: any = null
-	): CCallChainer;
-	function CSimpleCallChainer(
-		functionPrefix: string,
-		scope: any = null,
-		exactMatch = false
-	): CSimpleCallChainer;
 }
 
 export interface CBaseEntity {
@@ -2974,6 +2956,337 @@ export interface LateBinder {
 	m_log: boolean;
 	m_logIndent: number;
 	m_targetTable: any;
+}
+
+declare global {
+	declare const Convars: Convars;
+	declare const Director: CDirector;
+	declare const Entities: CEntities;
+	declare const EntityOutputs: CScriptEntityOutputs;
+	declare const NavMesh: CNavMesh;
+	declare const NetProps: CNetPropManager;
+	declare const ResponseCriteria: CScriptResponseCriteria;
+
+	function CCallChainer(
+		functionPrefix: string,
+		scope: any = null
+	): CCallChainer;
+	function CSimpleCallChainer(
+		functionPrefix: string,
+		scope: any = null,
+		exactMatch = false
+	): CSimpleCallChainer;
+
+	/**
+ * Dumps a scope's contents and expands all tables and arrays; this is what the ent_script_dump command uses.
+Tip:
+You can use this to print tables/arrays.
+Example Expand
+ * @param indentation int
+ * @param scope table
+ * @returns void
+ */
+	function __DumpScope(indentation: number, scope: table): void;
+
+	/**
+	 * Print a client message. If you pass null instead of a valid player, the message will be sent to all clients.
+	 * @param player CTerrorPlayer
+	 * @param destination int
+	 * @param message string
+	 * @returns void
+	 */
+	function ClientPrint(
+		player: CTerrorPlayer,
+		destination: number,
+		message: string
+	): void;
+
+	/**
+	 * Draw a debug overlay box.
+	 * @param origin Vector
+	 * @param min vector
+	 * @param max vector
+	 * @param r int
+	 * @param g int
+	 * @param b int
+	 * @param alpha int
+	 * @param duration float
+	 * @returns void
+	 */
+	function DebugDrawBox(
+		origin: Vector,
+		min: vector,
+		max: vector,
+		r: number,
+		g: number,
+		b: number,
+		alpha: number,
+		duration: number
+	): void;
+
+	/**
+	 * Draw a debug oriented box (cent, min, max, angles(p,y,r), vRgb, a, duration).
+	 * @param origin Vector
+	 * @param min Vector
+	 * @param max Vector
+	 * @param direction QAngle
+	 * @param rgb Vector
+	 * @param alpha int
+	 * @param duration float
+	 * @returns void
+	 */
+	function DebugDrawBoxAngles(
+		origin: Vector,
+		min: Vector,
+		max: Vector,
+		direction: QAngle,
+		rgb: Vector,
+		alpha: number,
+		duration: number
+	): void;
+
+	/**
+	 * Draw a debug forward box.
+	 * @param center Vector
+	 * @param min Vector
+	 * @param max Vector
+	 * @param forward Vector
+	 * @param rgb Vector
+	 * @param alpha float
+	 * @param duration float
+	 * @returns void
+	 */
+	function DebugDrawBoxDirection(
+		center: Vector,
+		min: Vector,
+		max: Vector,
+		forward: Vector,
+		rgb: Vector,
+		alpha: number,
+		duration: number
+	): void;
+
+	/**
+	 * Draw a debug circle.
+	 * @param center Vector
+	 * @param rgb Vector
+	 * @param alpha float
+	 * @param radius float
+	 * @param ztest bool
+	 * @param duration float
+	 * @returns void
+	 */
+	function DebugDrawCircle(
+		center: Vector,
+		rgb: Vector,
+		alpha: number,
+		radius: number,
+		ztest: boolean,
+		duration: number
+	): void;
+
+	/**
+	 * Try to clear all the debug overlay info.
+	 * @returns void
+	 */
+	function DebugDrawClear(): void;
+
+	/**
+	 * Draw a debug overlay line.
+	 * @param start Vector
+	 * @param end Vector
+	 * @param red int
+	 * @param green int
+	 * @param blue' int
+	 * @param zTest bool
+	 * @param time float
+	 * @returns void
+	 */
+	function DebugDrawLine(
+		start: Vector,
+		end: Vector,
+		red: number,
+		green: number,
+		blue: number,
+		zTest: boolean,
+		time: number
+	): void;
+
+	/**
+	 * Draw a debug line using color vec.
+	 * @param start Vector
+	 * @param end vector
+	 * @param rgb vector
+	 * @param ztest bool
+	 * @param duration float
+	 * @returns void
+	 */
+	function DebugDrawLine_vCol(
+		start: Vector,
+		end: vector,
+		rgb: vector,
+		ztest: boolean,
+		duration: number
+	): void;
+
+	/**
+	 * Draw text with a line offset.
+	 * @param x float
+	 * @param y float
+	 * @param lineOffset int
+	 * @param text string
+	 * @param r int
+	 * @param g int
+	 * @param b int
+	 * @param a int
+	 * @param duration float
+	 * @returns void
+	 */
+	function DebugDrawScreenTextLine(
+		x: number,
+		y: number,
+		lineOffset: number,
+		text: string,
+		r: number,
+		g: number,
+		b: number,
+		a: number,
+		duration: number
+	): void;
+
+	/**
+	 * Draw text on the screen, starting on the position of origin.
+	 * @param origin Vector
+	 * @param text string
+	 * @param useViewCheck bool
+	 * @param duration float
+	 * @returns void
+	 */
+	function DebugDrawText(
+		origin: Vector,
+		text: string,
+		useViewCheck: boolean,
+		duration: number
+	): void;
+
+	/**
+	 * Dumps information about a class or instance.
+	 * @param object handle
+	 * @returns void
+	 */
+	function DumpObject(object: SquirrelHandle): void;
+
+	/**
+	 * Manages the HUD timers. Valid command enumerations are: TIMER_DISABLE, TIMER_COUNTUP, TIMER_COUNTDOWN, TIMER_STOP, TIMER_SET
+	 * @param timerID int
+	 * @param command int
+	 * @param value float
+	 * @returns void
+	 */
+	function HUDManageTimers(
+		timerID: number,
+		command: number,
+		value: number
+	): void;
+
+	/**
+	 * Sets the position of a HUD element. See L4D2_EMS/Appendix:_HUD
+	 * @param slot int
+	 * @param x float
+	 * @param y float
+	 * @param width float
+	 * @param height float
+	 * @returns void
+	 */
+	function HUDPlace(
+		slot: number,
+		x: number,
+		y: number,
+		width: number,
+		height: number
+	): void;
+
+	/**
+	 * Returns the value of a HUD timer. See L4D2_EMS/Appendix:_HUD
+	 * @param timerID int
+	 * @returns float
+	 */
+	function HUDReadTimer(timerID: number): number;
+
+	/**
+ * Applies a HUD to the screen. See L4D2_EMS/Appendix:_HUD
+Important:
+Scriptedmode feature, usable properly in mutations only
+ * @param HUDTable table
+ * @returns void
+ */
+	function HUDSetLayout(HUDTable: table): void;
+
+	/**
+	 * Prints message to console without any line feed after.
+	 * @param message string
+	 * @returns void
+	 */
+	function Msg(message: string): void;
+
+	/**
+	 * Prints message to console without any line feed after. Identical to Msg().
+	 * @param message string
+	 * @returns void
+	 */
+	function print(message: string): void;
+
+	/**
+	 * Prints message to console with a line feed after.
+	 * @param message string
+	 * @returns void
+	 */
+	function printl(message: string): void;
+
+	/**
+	 * Identical to print. print seems to be a wrapper for this.
+	 * @param message string
+	 * @returns void
+	 */
+	function realPrint(message: string): void;
+
+	/**
+ * Print a HUD message on all clients.
+Bug*:
+Non-functional.
+ * @param message string
+ * @returns void
+ */
+	function ShowMessage(message: string): void;
+
+	/**
+	 * Calling this will have the specified player send the message to chat, either to teamOnly (true) or to everyone.
+	 * @param player CTerrorPlayer
+	 * @param message string
+	 * @param teamOnly bool
+	 * @returns void
+	 */
+	function Say(
+		player: CTerrorPlayer,
+		message: string,
+		teamOnly: boolean
+	): void;
+
+	/**
+	 * Send a string to the console as a command.
+	 * @param command string
+	 * @returns void
+	 */
+	function SendToConsole(command: string): void;
+
+	/**
+	 * Send a string to the server console as a command.
+	 * @param command string
+	 * @returns void
+	 */
+	function SendToServerConsole(command: string): void;
+
+	var Update: (() => void) | undefined;
 }
 
 export {};

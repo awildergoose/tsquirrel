@@ -134,5 +134,9 @@
 // 	print("N");
 // } else print("V");
 
-const v = Vector(2, 3, 5);
-v.mul(5);
+// const v = Vector(2, 3, 5);
+// v.mul(5);
+
+Update = () => {
+	Msg("meow\n");
+};

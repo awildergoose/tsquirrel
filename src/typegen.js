@@ -1,3 +1,5 @@
+useFunction = false;
+
 function mapType(t) {
 	switch (t.toLowerCase()) {
 		case "bool":
@@ -72,7 +74,9 @@ function generateTSFromTable(tableId) {
 			const argStr = args
 				.map((arg) => `${arg.name}: ${mapType(arg.type)}`)
 				.join(", ");
-			output += `${name}(${argStr}): ${mapType(returnType)};\n\n`;
+			output += `${
+				useFunction ? "function " : ""
+			}${name}(${argStr}): ${mapType(returnType)};\n\n`;
 		});
 	});
 
