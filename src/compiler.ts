@@ -130,7 +130,7 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 				out += `${method.getName()} = function(${handleParameters(
 					method.getParameters()
 				)}) {\n`;
-				out += handleBlockOrStatement(node);
+				out += handleBlockOrStatement(method.getBodyOrThrow());
 				out += "}";
 				break;
 			}
