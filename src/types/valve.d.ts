@@ -276,11 +276,11 @@ export interface Vector4D {
 	 */
 	y: number;
 	/**
-	 * Cartesian Z axis. Vector4D only.
+	 * Cartesian Z axis.
 	 */
 	z: number;
 	/**
-	 * Component for possibly creating homogeneous coordinates? Vector4D only.
+	 * Component for possibly creating homogeneous coordinates?
 	 */
 	w: number;
 
@@ -301,7 +301,81 @@ export interface Vector4D {
 	mul(scalar: number): Vector4D;
 }
 
-export interface Quaternion {}
+export interface Quaternion {
+	/**
+	 * The 4D scalar product of two quaternions. represents the angle between the quaternions in the range [1, 0].
+	 * @param factor Quaternion
+	 * @returns float
+	 */
+	Dot(factor: Quaternion): number;
+
+	/**
+	 * Returns a quaternion with the complimentary rotation.
+	 * @returns Quaternion
+	 */
+	Invert(): Quaternion;
+
+	/**
+ * Normalizes the 4D vector length.
+Todo: 	What effect does this have in quaternions?
+ * @returns Quaternion
+ */
+	Norm(): Quaternion;
+
+	/**
+	 * Recomputes the quaternion from the supplied Euler angles.
+	 * @param pitch float
+	 * @param yaw float
+	 * @param roll float
+	 * @returns void
+	 */
+	SetPitchYawRoll(pitch: number, yaw: number, roll: number): void;
+
+	/**
+	 * Returns a string with the values separated by one space.
+	 * @returns string
+	 */
+	ToKVString(): string;
+
+	/**
+	 * Returns the angles resulting from the rotation.
+	 * @returns QAngle
+	 */
+	ToQAngle(): QAngle;
+
+	/**
+	 * Vector component along the i axis.
+	 */
+	x: number;
+	/**
+	 * Vector component along the j axis.
+	 */
+	y: number;
+	/**
+	 * Vector component along the k axis.
+	 */
+	z: number;
+	/**
+	 * Scalar part.
+	 */
+	w: number;
+
+	/**
+	 * Sum of the two Quaternions.
+	 * @param other
+	 */
+	add(other: Quaternion): Quaternion;
+	/**
+	 * Subtraction of the two Quaternions.
+	 * @param other
+	 */
+	sub(other: Quaternion): Quaternion;
+	/**
+	 * Quaternion multiplied by a number.
+	 * @param scalar
+	 */
+	mul(scalar: number): Quaternion;
+}
 
 declare global {
 	/**
@@ -312,6 +386,9 @@ declare global {
 	 * Creates a new QAngle.
 	 */
 	declare const QAngle: (pitch = 0, yaw = 0, roll = 0) => QAngle;
+	/**
+	 * Creates a new quaternion of the form: w + xi + yj + zk.
+	 */
 	declare const Quaternion: (x = 0, y = 0, z = 0, w = 0) => Quaternion;
 
 	/**
