@@ -1,4 +1,3 @@
-import { watch } from "fs";
 import {
 	ArrowFunction,
 	BinaryExpression,
@@ -161,7 +160,7 @@ function handleBlockOrStatement(node: Node) {
 			out += compileNode(node2, true);
 		});
 		out += "}\n";
-	} else out += `${handleExpression(node as any)}`;
+	} else out += handleExpression(node as any);
 
 	return out;
 }
@@ -311,11 +310,9 @@ function handleCallExpression(callExpr: CallExpression) {
 			.map((a) => handleExpression(a as Expression));
 
 		if (
-			typeName === "Vector" ||
-			typeName === "QAngle" ||
-			typeName === "Vector2D" ||
-			typeName === "Vector4D" ||
-			typeName === "Quaternion"
+			["Vector", "QAngle", "Vector2D", "Vector4D", "Quaternion"].includes(
+				typeName
+			)
 		) {
 			if (method === "add" && args.length === 1) {
 				return `${target} + ${args[0]}`;
@@ -370,9 +367,9 @@ function handleCallExpression(callExpr: CallExpression) {
 				}
 
 				return `function ${hookName}(${params}) ${body}\n`;
-			} else {
-				throw new Error(`hook() callback is not a valid expression`);
 			}
+
+			throw new Error(`hook() callback is not a valid expression`);
 		} else {
 			const pos = callExpr.getStartLineNumber();
 			throw new Error(
@@ -681,12 +678,7 @@ function compileNode(node: Node, inFunction = false): string {
 }
 
 export async function compileFile(file: SourceFile): Promise<string> {
-	// Valve uses IncludeScript instead of Squirrel's dofile
-	let out = `try {
-    IncludeScript("std.nut")
-} catch (e) {
-    dofile("std.nut")
-}\n\n`;
+	let out = "";
 
 	file.forEachChild((node) => {
 		out += compileNode(node);
@@ -736,30 +728,14 @@ export async function compileProject(project: Project) {
 
 	const files = sortFilesByDependencies(unsortedFiles);
 	const outputs = await Promise.all(files.map((file) => compileFile(file)));
-	const output = outputs.join("\n");
+
+	// Valve uses IncludeScript instead of Squirrel's dofile
+	const output = `try {
+    IncludeScript("std.nut")
+} catch (e) {
+    dofile("std.nut")
+}\n\n${outputs.join("\n")}`;
 
 	console.timeEnd("compilation");
 	await Bun.write("out.nut", output);
-}
-
-async function main() {
-	console.time("parsing");
-	const project = new Project({
-		tsConfigFilePath: "./src/test/tsconfig.json",
-		skipFileDependencyResolution: true,
-		skipAddingFilesFromTsConfig: false,
-	});
-	console.timeEnd("parsing");
-
-	await compileProject(project);
-
-	project.getSourceFiles().forEach((file) => {
-		const filePath = file.getFilePath();
-		watch(filePath, async (eventType) => {
-			if (eventType === "change") {
-				file.refreshFromFileSystemSync();
-				await compileProject(project);
-			}
-		});
-	});
 }

@@ -1,7 +1,7 @@
 import { Cli, Command, Option } from "clipanion";
 import { watch } from "fs";
-import { Project, SourceFile } from "ts-morph";
-import { compileFile, sortFilesByDependencies } from "./compiler";
+import { Project } from "ts-morph";
+import { compileProject } from "./compiler";
 import log from "./logger";
 
 class CompileCommand extends Command {
@@ -27,7 +27,7 @@ class CompileCommand extends Command {
 			.getSourceFiles()
 			.filter((f) => !f.getFilePath().endsWith(".d.ts"));
 
-		await this.compileProject(project, files);
+		await compileProject(project);
 
 		if (this.watchMode) {
 			log.info("Watching files for changes...");
@@ -37,28 +37,13 @@ class CompileCommand extends Command {
 					if (eventType === "change") {
 						log.debug(`Detected change in ${file.getBaseName()}`);
 						file.refreshFromFileSystemSync();
-						await this.compileProject(project, files);
+						await compileProject(project);
 					}
 				});
 			});
 		}
 
 		return 0;
-	}
-
-	async compileProject(_project: Project, files: SourceFile[]) {
-		console.time("compilation");
-		log.info(`Compiling ${files.length} files...`);
-
-		const sortedFiles = sortFilesByDependencies(files);
-		const outputs = await Promise.all(
-			sortedFiles.map((file) => compileFile(file))
-		);
-		const output = outputs.join("\n");
-
-		await Bun.write("out.nut", output);
-		log.info("Compilation complete!");
-		console.timeEnd("compilation");
 	}
 }
 

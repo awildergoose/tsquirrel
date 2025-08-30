@@ -143,4 +143,5 @@ deepPrintTable({
 
 hook("Update", () => {
 	Msg("Meow\n");
+	DebugDrawBox(Vector(), Vector(50, 50), Vector(50, 50), 255, 0, 0, 255, 1);
 });

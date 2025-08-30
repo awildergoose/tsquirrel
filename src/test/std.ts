@@ -1,5 +1,5 @@
 export function deepPrintTable(debugTable: any, prefix = "") {
-	if (prefix == "") {
+	if (prefix === "") {
 		print(`${prefix}${debugTable}\n{\n`);
 		prefix = "   ";
 	}
@@ -17,5 +17,5 @@ export function deepPrintTable(debugTable: any, prefix = "") {
 		}
 	}
 
-	if (prefix == "   ") print("}\n");
+	if (prefix === "   ") print("}\n");
 }
