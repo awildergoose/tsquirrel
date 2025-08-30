@@ -107,5 +107,7 @@ for (const ent in table) {
 
 print(format("%s\n", type(table)));
 
-const t: Vector = Vector(5, 5);
-t.Length();
+// const t: Vector = Vector(5, 5);
+// print(format("%f\n", t.Length()));
+
+print(regexp("[0-9]+").capture("192")![0].begin);

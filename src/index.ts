@@ -51,7 +51,7 @@ function assignSlot(name: string, rhs: string, isGlobal = false): string {
 		isGlobal = true;
 	}
 
-	const key = isGlobal ? "::" + name : name;
+	const key = isGlobal ? `::${name}` : name;
 
 	const shouldDeclare =
 		(scope === ScopeKind.Global || scope === ScopeKind.ClassBody) &&
@@ -74,7 +74,8 @@ function handleVariableDeclarationList(
 
 	node.getDeclarations().forEach((declaration) => {
 		const value = declaration.getInitializer();
-		let finalValue = value !== undefined ? handleExpression(value) : "null";
+		const finalValue =
+			value !== undefined ? handleExpression(value) : "null";
 		out += `${keyword}${declaration.getName()} ${setter} ${finalValue}`;
 	});
 
@@ -184,18 +185,19 @@ function handleExpression(node: Expression): string {
 			return handleObjectLiteralExpression(
 				node.asKindOrThrow(ts.SyntaxKind.ObjectLiteralExpression)
 			);
-		case ts.SyntaxKind.PropertyAccessExpression:
-			const nodeTyped = node.asKindOrThrow(
+		case ts.SyntaxKind.PropertyAccessExpression: {
+			const expr = node.asKindOrThrow(
 				ts.SyntaxKind.PropertyAccessExpression
 			);
-			let left = nodeTyped.getExpression().getText();
-			let right = nodeTyped.getName();
+			let left = handleExpression(expr.getExpression());
+			const right = expr.getName();
 			let dot = ".";
 			if (left == "global") {
 				dot = "";
 				left = "::";
 			}
 			return `${left}${dot}${right}`;
+		}
 		case ts.SyntaxKind.BinaryExpression:
 			return handleBinaryExpression(
 				node.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
@@ -216,7 +218,20 @@ function handleExpression(node: Expression): string {
 				.getArguments()
 				.map((x) => handleExpression(x as Expression))})`;
 		}
-		case ts.SyntaxKind.ElementAccessExpression:
+		case ts.SyntaxKind.ElementAccessExpression: {
+			const expr = node.asKindOrThrow(
+				ts.SyntaxKind.ElementAccessExpression
+			);
+			return `${handleExpression(
+				expr.getExpression()
+			)}[${handleExpression(expr.getArgumentExpressionOrThrow())}]`;
+		}
+		case ts.SyntaxKind.NonNullExpression:
+			return handleExpression(
+				node
+					.asKindOrThrow(ts.SyntaxKind.NonNullExpression)
+					.getExpression()
+			);
 		case ts.SyntaxKind.PostfixUnaryExpression:
 		case ts.SyntaxKind.NumericLiteral:
 		case ts.SyntaxKind.StringLiteral:
@@ -224,6 +239,7 @@ function handleExpression(node: Expression): string {
 		case ts.SyntaxKind.TrueKeyword:
 		case ts.SyntaxKind.FalseKeyword:
 		case ts.SyntaxKind.NullKeyword:
+		case ts.SyntaxKind.ThisKeyword:
 			return node.getText();
 		case ts.SyntaxKind.UndefinedKeyword:
 			return "null";
@@ -231,13 +247,14 @@ function handleExpression(node: Expression): string {
 			return handleExpression(
 				node.asKindOrThrow(ts.SyntaxKind.AsExpression).getExpression()
 			);
-		default:
+		default: {
 			const filePath = node.getSourceFile().getFilePath();
 			const line = node.getStartLineNumber();
 			console.warn(
 				`[WARN] Unknown expression type: ${node.getKindName()} in ${filePath}:${line}`
 			);
 			return `${node.getText()} /* Unknown expr type ${node.getKindName()} */`;
+		}
 	}
 }
 
@@ -322,7 +339,7 @@ function handleTemplateExpression(node: TemplateExpression) {
 		const expr = handleExpression(span.getExpression());
 		const literal = span.getLiteral().getText().slice(1, -1); // remove quotes
 
-		out += " + " + expr;
+		out += ` + ${expr}`;
 		if (literal.length > 0) out += ` + "${literal}"`;
 	});
 
@@ -355,7 +372,7 @@ function handleFunctionDeclaration(node: FunctionDeclaration) {
 
 	withScope(ScopeKind.Function, () => {
 		out += `function ${fnName}(${params}) {\n`;
-		defaults.forEach((line) => (out += line + "\n"));
+		defaults.forEach((line) => (out += `${line}\n`));
 		fnBody.forEachChild((node) => {
 			out += compileNode(node, true);
 		});
@@ -543,7 +560,7 @@ function compileNode(node: Node, inFunction = false): string {
 		case ts.SyntaxKind.NumericLiteral:
 		case ts.SyntaxKind.StringLiteral:
 		case ts.SyntaxKind.Identifier:
-			return node.getText() + "\n";
+			return `${node.getText()}\n`;
 
 		case ts.SyntaxKind.EndOfFileToken:
 			return "// EOF\n";

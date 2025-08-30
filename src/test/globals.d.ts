@@ -1,26 +1,7 @@
-interface Math {
-	abs(value: number): number;
-	acos(angle: number): number;
-	asin(angle: number): number;
-	atan(value: number): number;
-	atan2(y: number, x: number): number;
-	ceil(value: number): number;
-	cos(angle: number): number;
-	exp(exponent: number): number;
-	fabs(value: number): number;
-	floor(value: number): number;
-	log(value: number): number;
-	log10(value: number): number;
-	pow(base: number, exponent: number): number;
-	rand(): number;
-	sin(angle: number): number;
-	sqrt(value: number): number;
-	srand(seed: number): void;
-	tan(angle: number): number;
-}
-
 declare global {
 	class Array<T = any> {
+		[n: number]: T;
+
 		append(value: T): void;
 		apply(fn: (value: T) => void): void;
 		clear(): void;
@@ -64,9 +45,9 @@ declare global {
 	/**
 	 * Print to console without a new line
 	 *
-	 * @param {string} text Text to print
+	 * @param {unknown} text What to print
 	 */
-	function print(text: string): void;
+	function print(text: unknown): void;
 
 	/**
 	 * Convert a float to an integer
@@ -184,8 +165,6 @@ declare global {
 	function newthread(threadFunc: Function): Generator;
 	function suspend(returnValue: any): void;
 	function type(obj: any): string;
-
-	declare let math: Math;
 }
 
 export {};

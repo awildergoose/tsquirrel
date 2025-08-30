@@ -9,6 +9,7 @@
     "include": [
         "./**/*.ts",
         "./globals.d.ts",
-        "./valve.d.ts"
+        "./math.d.ts",
+        "./valve.d.ts",
     ]
 }
