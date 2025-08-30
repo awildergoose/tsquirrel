@@ -141,8 +141,8 @@ hook("OnGameEvent_infected_hurt", (params) => {
 hookGameEvent("weapon_fire", (params) => {
 	const player = GetPlayerFromUserID(params.userid);
 
-	const lf = getPlayerLeft(player);
+	const left = getPlayerLeft(player);
 
-	print(format("player lf: %d %d %d\n", lf.x, lf.y, lf.z));
-	pushPlayer(player, getPlayerLeft(player), 50000);
+	print(format("player lf: %f %f %f\n", left.x, left.y, left.z));
+	pushPlayer(player, left, 5000);
 });

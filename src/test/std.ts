@@ -40,26 +40,32 @@ export function multiplyVector(a: Vector, b: Vector) {
 	return Vector(a.x * b.x, a.y * b.y, a.z * b.z);
 }
 
+/**
+ * Get player's yaw in radians
+ */
 export function getPlayerYawRad(player: CBaseEntity): number {
 	const angles = player.GetAngles();
 	return angles.y * (PI / 180);
 }
 
-export function getPlayerLeft(player: CBaseEntity): Vector {
-	const yaw = getPlayerYawRad(player);
-	return Vector(-cos(yaw), -sin(yaw), 0);
+export function getPlayerForward(player: CBaseEntity): Vector {
+	return normalizeVector(player.GetForwardVector());
 }
 
 export function getPlayerRight(player: CBaseEntity): Vector {
-	const yaw = getPlayerYawRad(player);
-	return Vector(cos(yaw), sin(yaw), 0);
+	const forward = getPlayerForward(player);
+	const right = Vector(forward.y, -forward.x, 0);
+	return normalizeVector(right);
 }
 
-export function getPlayerForward(player: CBaseEntity): Vector {
-	const yaw = getPlayerYawRad(player);
-	return Vector(sin(yaw), cos(yaw), 0);
+export function getPlayerLeft(player: CBaseEntity): Vector {
+	const right = getPlayerRight(player);
+	return right.mul(-1);
 }
 
+/**
+ * Pushes the player in a given direction by a magnitude
+ */
 export function pushPlayer(
 	player: CBaseEntity,
 	dir: Vector,
@@ -68,4 +74,13 @@ export function pushPlayer(
 	const currentVel = player.GetVelocity();
 	const push = dir.mul(magnitude);
 	player.SetVelocity(currentVel.add(push));
+}
+
+/**
+ * Utility to normalize a vector
+ */
+export function normalizeVector(vec: Vector): Vector {
+	const length = sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
+	if (length === 0) return Vector(0, 0, 0);
+	return Vector(vec.x / length, vec.y / length, vec.z / length);
 }

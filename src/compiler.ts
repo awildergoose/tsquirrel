@@ -271,6 +271,10 @@ function handleExpression(node: Expression): string {
 					.asKindOrThrow(ts.SyntaxKind.ParenthesizedExpression)
 					.getExpression()
 			)})`;
+		case ts.SyntaxKind.ReturnStatement:
+			return handleReturnStatement(
+				node.asKindOrThrow(ts.SyntaxKind.ReturnStatement)
+			);
 		default: {
 			const filePath = node.getSourceFile().getFilePath();
 			const line = node.getStartLineNumber();
