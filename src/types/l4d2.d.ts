@@ -1456,9 +1456,23 @@ Retrieve the actual script identifier with NetProps.GetPropString(ent, "m_iszScr
 	 * @returns bool
 	 */
 	ValidateScriptScope(): boolean;
+
+	// TODO: implement `bool Input[InputName]()`
+	/**
+	 * If ent_text is used on an entity and this function exists, it will be called every tick. Returns a string that gets displayed as part of the ent_text overlay. This is a handy feature for displaying script data on objects when you ent_text the object, or running arbitrary code (such as turning on additional debugging visualizations) is using ent_text. NOTE: ent_text_allow_script 1 must be set in order for this feature to be active.
+	 */
+	OnEntText(): string;
+	/**
+	 * Called after the entity spawns, which is after scripts and players have loaded. This could be used to have an entity register itself with a master script, or adjusting the entity parameters in a programmatic way.
+	 */
+	OnPostSpawn(): void;
+	/**
+	 * Called after the script executes.Can be used to call precache functions for models and sounds on map load.
+	 */
+	Precache(): void;
 }
 
-export interface CBaseAnimating {
+export interface CBaseAnimating extends CBaseEntity {
 	/**
 	 * Find a bodygroup ID by name. Returns -1 if the bodygroup does not exist.
 	 * @param name string
@@ -1629,7 +1643,7 @@ export interface CBaseAnimating {
 	SetSequence(ID: number): void;
 }
 
-export interface CBaseFlex {
+export interface CBaseFlex extends CBaseAnimating {
 	/**
 	 * Returns the instance of the oldest active scene entity (if any).
 	 * @returns handle
@@ -1652,7 +1666,7 @@ export interface CBaseFlex {
 	PlayScene(sceneFile: string, delay: number): number;
 }
 
-export interface CBaseCombatCharacter {
+export interface CBaseCombatCharacter extends CBaseFlex {
 	/**
 	 * Return the last nav area occupied - NULL if unknown.
 	 * @returns TerrorNavArea
@@ -1660,7 +1674,7 @@ export interface CBaseCombatCharacter {
 	GetLastKnownArea(): TerrorNavArea;
 }
 
-export interface CTerrorPlayer {
+export interface CTerrorPlayer extends CBaseCombatCharacter {
 	/**
 	 * Make the player drop an item/weapon from their inventory, by classname.
 	 * @param classname string
@@ -2014,7 +2028,7 @@ Doesn't update the m_isGoingToDie netprop, which controls the dying quotes.
 	UseAdrenaline(duration: number): void;
 }
 
-export interface CTerrorWeapon {
+export interface CTerrorWeapon extends CBaseAnimating {
 	/**
 	 * Current amount of ammo in a weapon's clip.
 	 * @returns int
@@ -2078,7 +2092,7 @@ export interface CTerrorWeapon {
 	SetClip2(amount: number): void;
 }
 
-export interface CBaseTrigger {
+export interface CBaseTrigger extends CBaseEntity {
 	/**
 	 * Disable the trigger. Identical to the Disable input.
 	 * @returns void
@@ -2107,7 +2121,7 @@ export interface AI_Response {
 	GetMatchScore(): number;
 }
 
-export interface CEnvEntityMaker {
+export interface CEnvEntityMaker extends CBaseEntity {
 	/**
 	 * Create an entity at the location of the maker.
 	 * @returns void
@@ -2137,7 +2151,7 @@ export interface CEnvEntityMaker {
 	SpawnEntityAtNamedEntityOrigin(name: string): void;
 }
 
-export interface CInfoItemPosition {
+export interface CInfoItemPosition extends CBaseEntity {
 	// TODO: Find these function signatures, Valve, please fix.
 	/**
 	 * Get the group number for this item position
@@ -2748,7 +2762,7 @@ export interface CNavLadder {
 	IsValid(): boolean;
 }
 
-export interface CPointTemplate {
+export interface CPointTemplate extends CBaseEntity {
 	// TODO: verify
 	/**
 	 * If this is defined, it will be called right before the entity is created, and any KeyValues returned will be assigned to the entity.
@@ -2764,7 +2778,7 @@ export interface CPointTemplate {
 	PostSpawn(entities: any): void;
 }
 
-export interface CPointScriptTemplate {
+export interface CPointScriptTemplate extends CBaseEntity {
 	/**
 	 * Add an entity to the template spawner.
 	 * @param arg string
@@ -2782,7 +2796,7 @@ export interface CPointScriptTemplate {
 	SetGroupSpawnTables(arg: SquirrelHandle, arg: SquirrelHandle): void;
 }
 
-export interface CPointScriptUseTarget {
+export interface CPointScriptUseTarget extends CBaseEntity {
 	/**
 	 * Sets if the UI panel for the button is shown.
 	 * @param showPanel bool
