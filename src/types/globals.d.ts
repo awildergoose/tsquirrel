@@ -11,7 +11,8 @@ export type SquirrelType =
 	| "class"
 	| "instance"
 	| "thread"
-	| "userdata";
+	| "userdata"
+	| "weakref";
 
 declare global {
 	class Array<T = any> {
