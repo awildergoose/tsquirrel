@@ -609,16 +609,19 @@ async function compileFile(file: SourceFile): Promise<string> {
 }
 
 function sortFilesByDependencies(files: SourceFile[]): SourceFile[] {
-	// map file → array of its direct dependencies
-	const deps = new Map<SourceFile, SourceFile[]>();
+	const dependencies = new Map<SourceFile, SourceFile[]>();
 
-	for (const f of files) {
-		const imports = f
-			.getImportDeclarations()
-			.map((d) => d.getModuleSpecifierSourceFile())
-			.filter((sf): sf is SourceFile => !!sf && files.includes(sf));
-		deps.set(f, imports);
-	}
+	for (const file of files)
+		dependencies.set(
+			file,
+			file
+				.getImportDeclarations()
+				.map((module) => module.getModuleSpecifierSourceFile())
+				.filter(
+					(sourceFile): sourceFile is SourceFile =>
+						!!sourceFile && files.includes(sourceFile)
+				)
+		);
 
 	const result: SourceFile[] = [];
 	const visited = new Set<SourceFile>();
@@ -626,15 +629,13 @@ function sortFilesByDependencies(files: SourceFile[]): SourceFile[] {
 	function visit(file: SourceFile) {
 		if (visited.has(file)) return;
 		visited.add(file);
-		for (const dep of deps.get(file) ?? []) {
-			visit(dep);
-		}
+
+		for (const dep of dependencies.get(file) ?? []) visit(dep);
+
 		result.push(file);
 	}
 
-	for (const f of files) {
-		visit(f);
-	}
+	for (const f of files) visit(f);
 
 	return result;
 }
