@@ -6,6 +6,7 @@ import {
 	Expression,
 	ExpressionStatement,
 	ForInStatement,
+	ForOfStatement,
 	ForStatement,
 	FunctionDeclaration,
 	IfStatement,
@@ -215,9 +216,7 @@ function handleExpression(node: Expression): string {
 			);
 		case ts.SyntaxKind.NewExpression: {
 			const nodeTyped = node.asKindOrThrow(ts.SyntaxKind.NewExpression);
-			return `new ${handleExpression(
-				nodeTyped.getExpression()
-			)}(${nodeTyped
+			return `${handleExpression(nodeTyped.getExpression())}(${nodeTyped
 				.getArguments()
 				.map((x) => handleExpression(x as Expression))})`;
 		}
@@ -505,7 +504,8 @@ function handleFunctionDeclaration(node: FunctionDeclaration) {
 }
 
 function handleReturnStatement(node: ReturnStatement) {
-	return `return ${handleExpression(node.getExpressionOrThrow())}\n`;
+	const expr = node.getExpression();
+	return `return ${expr === undefined ? "" : handleExpression(expr)}\n`;
 }
 
 function handleForStatement(node: ForStatement) {
@@ -623,6 +623,10 @@ function handleForInStatement(node: ForInStatement) {
 	return out;
 }
 
+function handleForOfStatement(node: ForOfStatement) {
+	return handleForInStatement(node as unknown as ForInStatement);
+}
+
 function compileNode(node: Node, inFunction = false): string {
 	switch (node.getKind()) {
 		case ts.SyntaxKind.VariableStatement:
@@ -676,6 +680,10 @@ function compileNode(node: Node, inFunction = false): string {
 		case ts.SyntaxKind.ForInStatement:
 			return handleForInStatement(
 				node.asKindOrThrow(ts.SyntaxKind.ForInStatement)
+			);
+		case ts.SyntaxKind.ForOfStatement:
+			return handleForOfStatement(
+				node.asKindOrThrow(ts.SyntaxKind.ForOfStatement)
 			);
 
 		// Automagically gets handled!

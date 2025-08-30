@@ -1,4 +1,4 @@
-import { deepPrintTable, pushPlayer } from "./std";
+import { deepPrintTable, Promise, pushPlayer } from "./std";
 
 // const myTable = {
 // 	a: 3,
@@ -142,4 +142,10 @@ hookGameEvent("weapon_fire", (params) => {
 	const player = GetPlayerFromUserID(params.userid);
 
 	pushPlayer(player, player.EyeAngles().Forward(), 2000);
+
+	new Promise((resolve) => {
+		resolve(69);
+	}).then((val) => {
+		print(val);
+	});
 });

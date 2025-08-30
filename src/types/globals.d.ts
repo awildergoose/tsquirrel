@@ -47,6 +47,8 @@ declare global {
 		top(): T | undefined;
 	}
 
+	class Function {}
+
 	class Boolean {
 		tofloat(): number;
 		tointeger(): number;

@@ -70,3 +70,31 @@ export function pushPlayer(
 	const push = dir.mul(magnitude);
 	player.SetVelocity(currentVel.add(push));
 }
+
+export class Promise<T> {
+	private state: string = "pending";
+	private value: T | null = null;
+	private handlers: ((val: T) => void)[] = [];
+
+	constructor(executor: (resolve: (val: T) => void) => void) {
+		const resolve = (val: T) => {
+			if (this.state != "pending") return;
+			this.state = "fulfilled";
+			this.value = val;
+
+			for (const h of this.handlers) h(val);
+		};
+
+		executor(resolve);
+	}
+
+	then(onFulfilled: (val: T) => void): Promise<T> {
+		if (this.state == "fulfilled" && this.value != null) {
+			onFulfilled(this.value);
+		} else {
+			this.handlers.push(onFulfilled);
+		}
+
+		return this;
+	}
+}
