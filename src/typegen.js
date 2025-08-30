@@ -1,3 +1,7 @@
+// Run this in your browser in
+// https://developer.valvesoftware.com/wiki/Left_4_Dead_2/Scripting/Script_Functions#Hooks_5
+// Make sure to set the id of the table you're trying to generate the types of
+// After that, do `generateTSFromTable("tableId")`
 useFunction = false;
 
 function mapType(t) {

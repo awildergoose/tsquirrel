@@ -1,5 +1,7 @@
 # tsquirrel
 
+This project compiles TypeScript projects to Squirrel, mainly made for Left 4 Dead 2.
+
 To install dependencies:
 
 ```bash
@@ -9,7 +11,11 @@ bun install
 To run:
 
 ```bash
-bun run index.ts
+bun watch
 ```
 
-This project was created using `bun init` in bun v1.2.21. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+To run in a standard (non-valve) Squirrel environment, you may use:
+
+```bash
+bun watchtest
+```
