@@ -1,26 +1,26 @@
 import { watch } from "fs";
 import {
-    ArrowFunction,
-    BinaryExpression,
-    CallExpression,
-    ClassDeclaration,
-    Expression,
-    ExpressionStatement,
-    ForInStatement,
-    ForStatement,
-    FunctionDeclaration,
-    IfStatement,
-    Node,
-    ObjectLiteralExpression,
-    ParameterDeclaration,
-    Project,
-    ReturnStatement,
-    SourceFile,
-    TemplateExpression,
-    ts,
-    VariableDeclarationList,
-    VariableStatement,
-    WhileStatement,
+	ArrowFunction,
+	BinaryExpression,
+	CallExpression,
+	ClassDeclaration,
+	Expression,
+	ExpressionStatement,
+	ForInStatement,
+	ForStatement,
+	FunctionDeclaration,
+	IfStatement,
+	Node,
+	ObjectLiteralExpression,
+	ParameterDeclaration,
+	Project,
+	ReturnStatement,
+	SourceFile,
+	TemplateExpression,
+	ts,
+	VariableDeclarationList,
+	VariableStatement,
+	WhileStatement,
 } from "ts-morph";
 
 enum ScopeKind {
@@ -594,7 +594,7 @@ function compileNode(node: Node, inFunction = false): string {
 }
 
 async function compileFile(file: SourceFile): Promise<string> {
-	// Valve uses RunScriptFile instead of Squirrel's dofile
+	// Valve uses IncludeScript instead of Squirrel's dofile
 	let out = `try {
     IncludeScript("std.nut")
 } catch (e) {
