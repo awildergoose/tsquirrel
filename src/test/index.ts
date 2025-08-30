@@ -107,7 +107,61 @@ for (const ent in table) {
 
 print(format("%s\n", type(table)));
 
-// const t: Vector = Vector(5, 5);
-// print(format("%f\n", t.Length()));
+const t: Vector = Vector(5, 5);
+print(format("%f\n", t.Length()));
 
-print(regexp("[0-9]+").capture("192")![0].begin);
+function deepPrintTable(debugTable, prefix = "") {
+	if (prefix == "") {
+		print(`${prefix}${debugTable}\n{`);
+		prefix = "   ";
+	}
+	for (let idx, val in debugTable) {
+		if (typeof val == "table") {
+			print(`${prefix}${idx} = \n${prefix}{\n`);
+			deepPrintTable(val, `${prefix}   `);
+			print(`${prefix}}\n`);
+		} else if (typeof val == "string") {
+			print(prefix + idx + '\t= "' + val + '"' + "\n");
+		} else {
+			print(prefix + idx + "\t= " + val + "\n");
+		}
+	}
+
+	if (prefix == "   ") print("}" + "\n");
+}
+// ::DeepPrintTable <- function( debugTable, prefix = "" )
+// {
+// 	if (prefix == "")
+// 	{
+// 		printl(prefix + debugTable)
+// 		printl("{")
+// 		prefix = "   "
+// 	}
+// 	foreach (idx, val in debugTable)
+// 	{
+// 		if (typeof(val) == "table")
+// 		{
+// 			printl( prefix + idx + " = \n" + prefix + "{")
+// 			DeepPrintTable( val, prefix + "   " )
+// 			printl(prefix + "}")
+// 		}
+// 		else if (typeof(val) == "string")
+// 			printl(prefix + idx + "\t= \"" + val + "\"")
+// 		else
+// 			printl(prefix + idx + "\t= " + val)
+// 	}
+// 	if (prefix == "   ")
+// 		printl("}")
+// }
+
+print(regexp("[0-9]+").capture("192"));
+
+const x = 3;
+
+if (2 + 3 === 5) {
+	print("K");
+} else if (2 + 3 == 6) {
+	print("L");
+} else if (x >= 3) {
+	print("N");
+} else print("V");

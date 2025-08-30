@@ -3,7 +3,7 @@ interface MatchRange {
 	end: number;
 }
 
-interface Regexp {
+interface RegExp {
 	match(str: string): boolean;
 	search(str: string, start?: number): MatchRange | null;
 	capture(str: string, start?: number): MatchRange[] | null;
@@ -12,7 +12,7 @@ interface Regexp {
 }
 
 declare global {
-	function regexp(pattern: string): Regexp;
+	function regexp(pattern: string): RegExp;
 }
 
 export {};

@@ -136,7 +136,7 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 			default:
 				const filePath = property.getSourceFile().getFilePath();
 				const line = property.getStartLineNumber();
-				console.warn(
+				console.trace(
 					`[WARN] Unknown object literal expression type: ${property.getKindName()} in ${filePath}:${line}`
 				);
 				out += `${property.getText()} /* Unknown object literal expression type ${property.getKindName()} */`;
@@ -154,20 +154,21 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 function handleBlockOrStatement(node: Node) {
 	let out = "";
 
-	if (node.getKind() === ts.SyntaxKind.Block)
+	if (node.getKind() === ts.SyntaxKind.Block) {
+		out += "{\n";
 		node.forEachChild((node2) => {
 			out += compileNode(node2, true);
 		});
-	else out += `return ${handleExpression(node as any)}`;
+		out += "}\n";
+	} else out += `${handleExpression(node as any)}`;
 
 	return out;
 }
 
 function handleArrowFunction(node: ArrowFunction) {
 	let out = "";
-	out += `function(${handleParameters(node.getParameters())}) {\n`;
+	out += `function(${handleParameters(node.getParameters())})`;
 	out += handleBlockOrStatement(node.getBody());
-	out += "}\n";
 
 	return out;
 }
@@ -247,13 +248,27 @@ function handleExpression(node: Expression): string {
 			return handleExpression(
 				node.asKindOrThrow(ts.SyntaxKind.AsExpression).getExpression()
 			);
+		case ts.SyntaxKind.TypeOfExpression:
+			return `typeof(${handleExpression(
+				node
+					.asKindOrThrow(ts.SyntaxKind.TypeOfExpression)
+					.getExpression()
+			)})`;
+		case ts.SyntaxKind.IfStatement:
+			return handleIfStatement(
+				node.asKindOrThrow(ts.SyntaxKind.IfStatement)
+			);
+		case ts.SyntaxKind.ExpressionStatement:
+			return handleExpressionStatement(
+				node.asKindOrThrow(ts.SyntaxKind.ExpressionStatement)
+			);
 		default: {
 			const filePath = node.getSourceFile().getFilePath();
 			const line = node.getStartLineNumber();
-			console.warn(
+			console.trace(
 				`[WARN] Unknown expression type: ${node.getKindName()} in ${filePath}:${line}`
 			);
-			return `${node.getText()} /* Unknown expr type ${node.getKindName()} */`;
+			return `${node.getText()} /* Unknown expression type ${node.getKindName()} */`;
 		}
 	}
 }
@@ -261,7 +276,8 @@ function handleExpression(node: Expression): string {
 function handleBinaryExpression(node: BinaryExpression): string {
 	const left = handleExpression(node.getLeft());
 	const right = handleExpression(node.getRight());
-	const op = node.getOperatorToken().getText();
+
+	let op = node.getOperatorToken().getText();
 
 	if (op === "=" && ts.isIdentifier(node.getLeft().compilerNode)) {
 		const isGlobal = left.startsWith("::");
@@ -271,6 +287,7 @@ function handleBinaryExpression(node: BinaryExpression): string {
 	if (op === "=") {
 		return `${left} = ${right}`;
 	}
+	if (op === "===") op = "==";
 
 	return `${left} ${op} ${right}`;
 }
@@ -321,7 +338,7 @@ function handleExpressionStatement(node: ExpressionStatement) {
 		default:
 			const filePath = expr.getSourceFile().getFilePath();
 			const line = expr.getStartLineNumber();
-			console.warn(
+			console.trace(
 				`[WARN] Unknown expression statement type: ${expr.getKindName()} in ${filePath}:${line}`
 			);
 
@@ -462,19 +479,15 @@ function handleIfStatement(node: IfStatement) {
 	let out = "";
 
 	const expression = node.getExpression();
-	out += `if (${handleExpression(expression)}) {\n`;
-	node.getThenStatement().forEachChild((node) => {
-		out += compileNode(node, false);
-	});
+	out += `if (${handleExpression(expression)})`;
+	out += handleBlockOrStatement(node.getThenStatement());
+
 	const elseStatement = node.getElseStatement();
 	if (elseStatement !== undefined) {
-		out += `} else {\n`;
-		elseStatement.forEachChild((node) => {
-			out += compileNode(node, false);
-		});
+		out += ` else `;
+		out += handleBlockOrStatement(elseStatement);
 	}
 
-	out += "}\n";
 	return out;
 }
 
@@ -482,9 +495,9 @@ function handleWhileStatement(node: WhileStatement) {
 	let out = "";
 
 	const expression = node.getExpression();
-	out += `while (${handleExpression(expression)}) {\n`;
+	out += `while (${handleExpression(expression)})`;
 	out += handleBlockOrStatement(node.getStatement());
-	out += "}\n";
+
 	return out;
 }
 
@@ -496,9 +509,9 @@ function handleForInStatement(node: ForInStatement) {
 		.asKindOrThrow(ts.SyntaxKind.VariableDeclarationList)
 		.getDeclarations()
 		.map((node) => node.getName())
-		.join(", ")} in ${handleExpression(node.getExpression())}) {\n`;
+		.join(", ")} in ${handleExpression(node.getExpression())})`;
 	out += handleBlockOrStatement(node.getStatement());
-	out += "}\n";
+
 	return out;
 }
 
@@ -568,7 +581,7 @@ function compileNode(node: Node, inFunction = false): string {
 		default:
 			const filePath = node.getSourceFile().getFilePath();
 			const line = node.getStartLineNumber();
-			console.warn(
+			console.trace(
 				`[WARN] Unknown node type: ${node.getKindName()} in ${filePath}:${line}`
 			);
 			return `${node.getText()} /* Unknown node: ${node.getKindName()} */\n`;
