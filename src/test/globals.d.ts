@@ -1,3 +1,18 @@
+export type SquirrelType =
+	| "null"
+	| "integer"
+	| "float"
+	| "string"
+	| "bool"
+	| "table"
+	| "array"
+	| "function"
+	| "generator"
+	| "class"
+	| "instance"
+	| "thread"
+	| "userdata";
+
 declare global {
 	class Array<T = any> {
 		[n: number]: T;
@@ -92,6 +107,8 @@ declare global {
 	 * @returns {string} Number as a string
 	 */
 	function itos(int: number): string;
+
+	function typeOf(obj: any): SquirrelType;
 
 	/**
 	 * Format specifiers:

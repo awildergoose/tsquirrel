@@ -346,18 +346,19 @@ function handleExpressionStatement(node: ExpressionStatement) {
 	}
 }
 
-function handleTemplateExpression(node: TemplateExpression) {
+function handleTemplateExpression(node: TemplateExpression): string {
 	let out = "";
 
-	const head = node.getHead().getText();
-	out += `"${head.slice(1, -2)}"`;
+	const head = node.getHead().getLiteralText();
+	out += head.length > 0 ? JSON.stringify(head) : '""';
 
 	node.getTemplateSpans().forEach((span) => {
 		const expr = handleExpression(span.getExpression());
-		const literal = span.getLiteral().getText().slice(1, -1); // remove quotes
 
-		out += ` + ${expr}`;
-		if (literal.length > 0) out += ` + "${literal}"`;
+		const literal = span.getLiteral().getLiteralText();
+
+		out += ` + (${expr})`;
+		if (literal.length > 0) out += ` + ${JSON.stringify(literal)}`;
 	});
 
 	return out;

@@ -36,3 +36,7 @@ function bindenv(fn, contextObject) {
 function pacall(fn, arguments) {
 	return fn.pacall(fn, arguments)
 }
+
+function typeOf(a) {
+	return typeof(a)
+}

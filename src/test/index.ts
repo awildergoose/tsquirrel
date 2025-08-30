@@ -107,54 +107,42 @@ for (const ent in table) {
 
 print(format("%s\n", type(table)));
 
-const t: Vector = Vector(5, 5);
-print(format("%f\n", t.Length()));
+// const t: Vector = Vector(5, 5);
+// print(format("%f\n", t.Length()));
 
-function deepPrintTable(debugTable, prefix = "") {
+function deepPrintTable(debugTable: any, prefix = "") {
 	if (prefix == "") {
-		print(`${prefix}${debugTable}\n{`);
+		print(`${prefix}${debugTable}\n{\n`);
 		prefix = "   ";
 	}
+
+	//@ts-ignore TS1091
 	for (let idx, val in debugTable) {
-		if (typeof val == "table") {
+		if (typeOf(val) === "table") {
 			print(`${prefix}${idx} = \n${prefix}{\n`);
 			deepPrintTable(val, `${prefix}   `);
 			print(`${prefix}}\n`);
-		} else if (typeof val == "string") {
-			print(prefix + idx + '\t= "' + val + '"' + "\n");
+		} else if (typeOf(val) === "string") {
+			print(`${prefix + idx}\t= "${val}"\n`);
 		} else {
-			print(prefix + idx + "\t= " + val + "\n");
+			print(`${prefix + idx}\t= ${val}\n`);
 		}
 	}
 
 	if (prefix == "   ") print("}" + "\n");
 }
-// ::DeepPrintTable <- function( debugTable, prefix = "" )
-// {
-// 	if (prefix == "")
-// 	{
-// 		printl(prefix + debugTable)
-// 		printl("{")
-// 		prefix = "   "
-// 	}
-// 	foreach (idx, val in debugTable)
-// 	{
-// 		if (typeof(val) == "table")
-// 		{
-// 			printl( prefix + idx + " = \n" + prefix + "{")
-// 			DeepPrintTable( val, prefix + "   " )
-// 			printl(prefix + "}")
-// 		}
-// 		else if (typeof(val) == "string")
-// 			printl(prefix + idx + "\t= \"" + val + "\"")
-// 		else
-// 			printl(prefix + idx + "\t= " + val)
-// 	}
-// 	if (prefix == "   ")
-// 		printl("}")
-// }
 
-print(regexp("[0-9]+").capture("192"));
+deepPrintTable({
+	v: "hello",
+	n: 2,
+	t: true,
+	we: {
+		thrive: true,
+		magically: {
+			help: true,
+		},
+	},
+});
 
 const x = 3;
 
