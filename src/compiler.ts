@@ -3,6 +3,7 @@ import {
 	BinaryExpression,
 	CallExpression,
 	ClassDeclaration,
+	ConditionalExpression,
 	Expression,
 	ExpressionStatement,
 	ForInStatement,
@@ -129,9 +130,7 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 				out += `${method.getName()} = function(${handleParameters(
 					method.getParameters()
 				)}) {\n`;
-				method.getBodyOrThrow().forEachChild((node) => {
-					out += compileNode(node, true);
-				});
+				out += handleBlockOrStatement(node);
 				out += "}";
 				break;
 			}
@@ -274,6 +273,11 @@ function handleExpression(node: Expression): string {
 			return handleReturnStatement(
 				node.asKindOrThrow(ts.SyntaxKind.ReturnStatement)
 			);
+		case ts.SyntaxKind.ConditionalExpression:
+			return handleConditionalExpression(
+				node.asKindOrThrow(ts.SyntaxKind.ConditionalExpression)
+			);
+		// forstatement
 		default: {
 			const filePath = node.getSourceFile().getFilePath();
 			const line = node.getStartLineNumber();
@@ -298,6 +302,7 @@ function handleBinaryExpression(node: BinaryExpression): string {
 
 	if (op === "=") return `${left} = ${right}`;
 	if (op === "===") op = "==";
+	if (op === "!==") op = "!=";
 
 	return `${left} ${op} ${right}`;
 }
@@ -376,9 +381,7 @@ function handleCallExpression(callExpr: CallExpression) {
 					.join(", ");
 				let body = "";
 				if (fn.getBody().getKind() === ts.SyntaxKind.Block) {
-					fn.getBody().forEachChild((n) => {
-						body += compileNode(n, true);
-					});
+					body += handleBlockOrStatement(fn.getBody());
 					body = `{\n${body}}`;
 				} else {
 					// single expression arrow
@@ -429,17 +432,20 @@ function handleExpressionStatement(node: ExpressionStatement) {
 
 	switch (expr.getKind()) {
 		case ts.SyntaxKind.BinaryExpression:
-			return (
-				handleBinaryExpression(
-					expr.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
-				) + "\n"
-			);
+			return `${handleBinaryExpression(
+				expr.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
+			)}\n`;
 		case ts.SyntaxKind.CallExpression:
-			return (
-				handleCallExpression(
-					expr.asKindOrThrow(ts.SyntaxKind.CallExpression)
-				) + "\n"
-			);
+			return `${handleCallExpression(
+				expr.asKindOrThrow(ts.SyntaxKind.CallExpression)
+			)}\n`;
+
+		case ts.SyntaxKind.DeleteExpression:
+			return `delete ${handleExpression(
+				expr
+					.asKindOrThrow(ts.SyntaxKind.DeleteExpression)
+					.getExpression()
+			)}\n`;
 		default:
 			const filePath = expr.getSourceFile().getFilePath();
 			const line = expr.getStartLineNumber();
@@ -494,9 +500,7 @@ function handleFunctionDeclaration(node: FunctionDeclaration) {
 	withScope(ScopeKind.Function, () => {
 		out += `function ${fnName}(${params}) {\n`;
 		defaults.forEach((line) => (out += `${line}\n`));
-		fnBody.forEachChild((node) => {
-			out += compileNode(node, true);
-		});
+		out += handleBlockOrStatement(fnBody);
 		out += "}\n";
 	});
 
@@ -506,6 +510,12 @@ function handleFunctionDeclaration(node: FunctionDeclaration) {
 function handleReturnStatement(node: ReturnStatement) {
 	const expr = node.getExpression();
 	return `return ${expr === undefined ? "" : handleExpression(expr)}\n`;
+}
+
+function handleConditionalExpression(node: ConditionalExpression) {
+	return `${handleExpression(node.getCondition())} ? ${handleExpression(
+		node.getWhenTrue()
+	)} : ${handleExpression(node.getWhenFalse())}`;
 }
 
 function handleForStatement(node: ForStatement) {
@@ -518,9 +528,7 @@ function handleForStatement(node: ForStatement) {
 		"local ",
 		"="
 	)}; ${handleExpression(condition)}; ${handleExpression(incrementor)}) {\n`;
-	node.getStatement().forEachChild((node) => {
-		out += compileNode(node);
-	});
+	out += handleBlockOrStatement(node);
 	out += "}\n";
 	return out;
 }
@@ -539,9 +547,7 @@ function handleClassDeclaration(node: ClassDeclaration) {
 					const params = handleParameters(ctor.getParameters());
 					withScope(ScopeKind.Constructor, () => {
 						out += `constructor(${params}) {\n`;
-						ctor.getBodyOrThrow().forEachChild((n) => {
-							out += compileNode(n, true);
-						});
+						out += handleBlockOrStatement(ctor.getBodyOrThrow());
 						out += "}\n";
 					});
 					break;
@@ -568,11 +574,10 @@ function handleClassDeclaration(node: ClassDeclaration) {
 					const mName = method.getName();
 					const mParams = handleParameters(method.getParameters());
 					withScope(ScopeKind.Method, () => {
-						out += `function ${mName}(${mParams}) {\n`;
-						method
-							.getBodyOrThrow()
-							.forEachChild((n) => (out += compileNode(n, true)));
-						out += "}\n";
+						const body = handleBlockOrStatement(
+							method.getBodyOrThrow()
+						);
+						out += `function ${mName}(${mParams}) ${body}\n`;
 					});
 					break;
 				}
@@ -697,6 +702,9 @@ function compileNode(node: Node, inFunction = false): string {
 			);
 		// Automagically gets handled!
 		case ts.SyntaxKind.ImportDeclaration:
+			return "\n";
+		// TypeScript types
+		case ts.SyntaxKind.TypeAliasDeclaration:
 			return "\n";
 
 		case ts.SyntaxKind.NumericLiteral:
