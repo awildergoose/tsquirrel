@@ -146,7 +146,7 @@ declare global {
 
 	declare function hookGameEvent<T extends GameEventName>(
 		event: T,
-		callback: (data: GameEventMap[T]) => void
+		callback: (params: GameEventMap[T]) => void
 	): void;
 
 	// Standard library

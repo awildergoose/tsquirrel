@@ -1,6 +1,6 @@
 export function deepPrintTable(debugTable: any, prefix = "") {
 	if (prefix === "") {
-		print(`${prefix}${debugTable}\n{\n`);
+		print("{\n");
 		prefix = "   ";
 	}
 
