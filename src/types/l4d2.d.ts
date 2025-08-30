@@ -1076,6 +1076,16 @@ declare global {
 	declare const NavMesh: CNavMesh;
 	declare const NetProps: CNetPropManager;
 	declare const ResponseCriteria: CScriptResponseCriteria;
+
+	function CCallChainer(
+		functionPrefix: string,
+		scope: any = null
+	): CCallChainer;
+	function CSimpleCallChainer(
+		functionPrefix: string,
+		scope: any = null,
+		exactMatch = false
+	): CSimpleCallChainer;
 }
 
 export interface CBaseEntity {
@@ -2867,6 +2877,89 @@ export interface Decider {
 	 * @returns bool
 	 */
 	IsValid(): boolean;
+}
+
+export interface CCallChainer {
+	/**
+	 * Search for all non-native functions with matching prefixes, then push them into the chains table.
+	 * @returns void
+	 */
+	PostScriptExecute(): void;
+
+	/**
+	 * Find an unprefixed function name in the chains table and call it with the given arguments.
+	 * @param event string
+	 * @param ...args any
+	 * @returns bool
+	 */
+	Call(event: string, ...args: any): boolean;
+
+	/**
+	 * Contains names of unprefixed functions, each with an array of functions to call.
+	 */
+	chains: any;
+
+	/**
+	 * Prefix that functions should have to be added into the chains table. Set by the constructor.
+	 */
+	prefix: string;
+
+	/**
+	 * If set, seek functions in this scope instead. Set by the constructor.
+	 */
+	scope: any;
+}
+
+export interface CSimpleCallChainer {
+	/**
+	 * Begin searching for all non-native functions with matching prefixes, then push them into the chain array.
+	 * @returns void
+	 */
+	PostScriptExecute(): void;
+
+	/**
+	 * Call all functions inside the chain array with the given arguments.
+	 * @param ...args any
+	 * @returns bool
+	 */
+	Call(...args: any): boolean;
+
+	/**
+	 * All functions to be called by the Call() method.
+	 */
+	chain: any;
+
+	/**
+	 * If set, names of non-native functions and prefix must be an exact match. Set by the constructor.
+	 */
+	exactMatch: boolean;
+
+	/**
+	 * Prefix that functions should have to be added into the chain array. Set by the constructor.
+	 */
+	prefix: string;
+
+	/**
+	 * If set, seek functions in this scope instead. Set by the constructor.
+	 */
+	scope: any;
+}
+
+export interface LateBinder {
+	// TODO: what the hell is this??
+	Begin(...args: unknown): unknown;
+	End(...args: unknown): unknown;
+	EstablishDelegation(...args: unknown): unknown;
+	HookRootMetamethod(...args: unknown): unknown;
+	UnhookRootMetamethod(...args: unknown): unknown;
+	RemoveDelegation(...args: unknown): unknown;
+	Resolve(...args: unknown): unknown;
+
+	m_bindNamesStack: Array;
+	m_fixupSet: Array;
+	m_log: boolean;
+	m_logIndent: number;
+	m_targetTable: any;
 }
 
 export {};
