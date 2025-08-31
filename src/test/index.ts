@@ -153,10 +153,10 @@ hookGameEvent("weapon_fire", (params) => {
 		else reject("Stupid!!");
 	})
 		.then((val) => {
-			printl(format("promise returned: %s", val));
+			printl(format("promise returned: %s\n", val));
 		})
 		.andCatch((err) => {
-			printl(format("FireError: %s", err));
+			printl(format("FireError: %s\n", err));
 		});
 
 	forEachPlayer((player) => {

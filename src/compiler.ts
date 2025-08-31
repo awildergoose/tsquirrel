@@ -156,15 +156,15 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 	return out;
 }
 
-function handleBlockOrStatement(node: Node) {
+function handleBlockOrStatement(node: Node, addBraces = true) {
 	let out = "";
 
 	if (node.getKind() === ts.SyntaxKind.Block) {
-		out += "{\n";
+		if (addBraces) out += "{\n";
 		node.forEachChild((node2) => {
 			out += compileNode(node2, true);
 		});
-		out += "}\n";
+		if (addBraces) out += "}\n";
 	} else out += handleExpression(node as any);
 
 	return out;
@@ -390,7 +390,7 @@ function handleCallExpression(callExpr: CallExpression) {
 					.join(", ");
 				let body = "";
 				if (fn.getBody().getKind() === ts.SyntaxKind.Block) {
-					body += handleBlockOrStatement(fn.getBody());
+					body += handleBlockOrStatement(fn.getBody(), false);
 					body = `{\n${body}}`;
 				} else {
 					// single expression arrow
@@ -511,7 +511,7 @@ function handleFunctionDeclaration(node: FunctionDeclaration) {
 	withScope(ScopeKind.Function, () => {
 		out += `function ${fnName}(${params}) {\n`;
 		defaults.forEach((line) => (out += `${line}\n`));
-		out += handleBlockOrStatement(fnBody);
+		out += handleBlockOrStatement(fnBody, false);
 		out += "}\n";
 	});
 
@@ -557,9 +557,8 @@ function handleClassDeclaration(node: ClassDeclaration) {
 					);
 					const params = handleParameters(ctor.getParameters());
 					withScope(ScopeKind.Constructor, () => {
-						out += `constructor(${params}) {\n`;
+						out += `constructor(${params})`;
 						out += handleBlockOrStatement(ctor.getBodyOrThrow());
-						out += "}\n";
 					});
 					break;
 				}
