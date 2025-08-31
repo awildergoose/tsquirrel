@@ -1,29 +1,30 @@
 import {
-    ArrowFunction,
-    BinaryExpression,
-    CallExpression,
-    ClassDeclaration,
-    ConditionalExpression,
-    EnumDeclaration,
-    Expression,
-    ExpressionStatement,
-    ForInStatement,
-    ForOfStatement,
-    ForStatement,
-    FunctionDeclaration,
-    IfStatement,
-    Node,
-    ObjectLiteralExpression,
-    ParameterDeclaration,
-    Project,
-    ReturnStatement,
-    SourceFile,
-    TemplateExpression,
-    TryStatement,
-    ts,
-    VariableDeclarationList,
-    VariableStatement,
-    WhileStatement,
+	ArrowFunction,
+	BinaryExpression,
+	CallExpression,
+	ClassDeclaration,
+	ConditionalExpression,
+	EnumDeclaration,
+	Expression,
+	ExpressionStatement,
+	ForInStatement,
+	ForOfStatement,
+	ForStatement,
+	FunctionDeclaration,
+	IfStatement,
+	Node,
+	ObjectLiteralExpression,
+	ParameterDeclaration,
+	Project,
+	ReturnStatement,
+	SourceFile,
+	SwitchStatement,
+	TemplateExpression,
+	TryStatement,
+	ts,
+	VariableDeclarationList,
+	VariableStatement,
+	WhileStatement,
 } from "ts-morph";
 import log from "./logger";
 
@@ -159,7 +160,7 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 function handleBlockOrStatement(node: Node, addBraces = true) {
 	let out = "";
 
-	if (node.getKind() === ts.SyntaxKind.Block) {
+	if (node.isKind(ts.SyntaxKind.Block)) {
 		if (addBraces) out += "{\n";
 		node.forEachChild((node2) => {
 			out += compileNode(node2, true);
@@ -243,6 +244,7 @@ function handleExpression(node: Expression): string {
 		case ts.SyntaxKind.FalseKeyword:
 		case ts.SyntaxKind.NullKeyword:
 		case ts.SyntaxKind.ThisKeyword:
+		case ts.SyntaxKind.BreakStatement:
 			return node.getText();
 		case ts.SyntaxKind.NumericLiteral:
 			return node
@@ -370,17 +372,16 @@ function handleCallExpression(callExpr: CallExpression) {
 			const hookNameNode = args[0]!;
 			const callbackNode = args[1]!;
 
-			const hookName =
-				hookNameNode.getKind() === ts.SyntaxKind.StringLiteral
-					? (hookNameNode as any).getLiteralText()
-					: handleExpression(hookNameNode as Expression);
+			const hookName = hookNameNode.isKind(ts.SyntaxKind.StringLiteral)
+				? (hookNameNode as any).getLiteralText()
+				: handleExpression(hookNameNode as Expression);
 
 			if (
 				callbackNode.isKind(ts.SyntaxKind.ArrowFunction) ||
 				callbackNode.isKind(ts.SyntaxKind.FunctionExpression)
 			) {
 				const fn = callbackNode.asKindOrThrow(
-					callbackNode.getKind() === ts.SyntaxKind.ArrowFunction
+					callbackNode.isKind(ts.SyntaxKind.ArrowFunction)
 						? ts.SyntaxKind.ArrowFunction
 						: ts.SyntaxKind.FunctionExpression
 				);
@@ -389,7 +390,7 @@ function handleCallExpression(callExpr: CallExpression) {
 					.map((p) => p.getName())
 					.join(", ");
 				let body = "";
-				if (fn.getBody().getKind() === ts.SyntaxKind.Block) {
+				if (fn.getBody().isKind(ts.SyntaxKind.Block)) {
 					body += handleBlockOrStatement(fn.getBody(), false);
 					body = `{\n${body}}`;
 				} else {
@@ -418,11 +419,11 @@ function handleCallExpression(callExpr: CallExpression) {
 
 	let expectedParamCount = args.length;
 
-	if (exprNode.getKind() === ts.SyntaxKind.Identifier) {
+	if (exprNode.isKind(ts.SyntaxKind.Identifier)) {
 		const decl = exprNode
 			.asKindOrThrow(ts.SyntaxKind.Identifier)
 			.getDefinitionNodes()[0];
-		if (decl && decl.getKind() === ts.SyntaxKind.FunctionDeclaration) {
+		if (decl && decl.isKind(ts.SyntaxKind.FunctionDeclaration)) {
 			expectedParamCount = decl
 				.asKindOrThrow(ts.SyntaxKind.FunctionDeclaration)
 				.getParameters().length;
@@ -675,6 +676,26 @@ function handleTryStatement(node: TryStatement) {
 	}
 }
 
+function handleSwitchStatement(node: SwitchStatement) {
+	let out = "";
+	out += `switch (${handleExpression(node.getExpression())}) {\n`;
+	for (const clause of node.getClauses()) {
+		const statements = clause
+			.getStatements()
+			.map((s) => handleBlockOrStatement(s, false))
+			.join("");
+		if (clause.isKind(ts.SyntaxKind.CaseClause)) {
+			out += `case ${handleExpression(
+				clause.getExpression()
+			)}: {\n${statements}\n}\n`;
+		} else {
+			out += `default: {\n${statements}\n}\n`;
+		}
+	}
+	out += "}\n";
+	return out;
+}
+
 function compileNode(node: Node, inFunction = false): string {
 	switch (node.getKind()) {
 		case ts.SyntaxKind.CallExpression:
@@ -749,6 +770,10 @@ function compileNode(node: Node, inFunction = false): string {
 		case ts.SyntaxKind.TryStatement:
 			return handleTryStatement(
 				node.asKindOrThrow(ts.SyntaxKind.TryStatement)
+			);
+		case ts.SyntaxKind.SwitchStatement:
+			return handleSwitchStatement(
+				node.asKindOrThrow(ts.SyntaxKind.SwitchStatement)
 			);
 		// Automagically gets handled!
 		case ts.SyntaxKind.ImportDeclaration:

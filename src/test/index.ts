@@ -151,7 +151,7 @@ hookGameEvent("weapon_fire", (params) => {
 		if (randRange(100) >= 50) resolve(randRange(100));
 		else reject("Stupid!!");
 	})
-		.then((val) => {
+		.andThen((val) => {
 			printl(format("promise returned: %d", val));
 		})
 		.andCatch((err) => {

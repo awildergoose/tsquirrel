@@ -32,7 +32,7 @@ export class Promise<K> {
 		}
 	}
 
-	then(onFulfilled: (val: K) => void): Promise<K> {
+	andThen(onFulfilled: (val: K) => void): Promise<K> {
 		if (this.state === "fulfilled" && this.value != null) {
 			onFulfilled(this.value);
 		} else if (this.state === "pending") {
