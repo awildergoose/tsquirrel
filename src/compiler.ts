@@ -4,6 +4,7 @@ import {
 	CallExpression,
 	ClassDeclaration,
 	ConditionalExpression,
+	DoStatement,
 	EnumDeclaration,
 	Expression,
 	ExpressionStatement,
@@ -632,6 +633,19 @@ function handleWhileStatement(node: WhileStatement) {
 	return out;
 }
 
+function handleDoStatement(node: DoStatement) {
+	let out = "";
+	let whileStatement = "";
+	if (!node.getExpressionIfKind(ts.SyntaxKind.Identifier))
+		whileStatement += ` while(${handleBlockOrStatement(
+			node.getExpression()
+		)})`;
+	out += `do ${handleBlockOrStatement(node.getStatement())}${whileStatement}`;
+
+	out += "\n";
+	return out;
+}
+
 function handleForInStatement(node: ForInStatement) {
 	const init = node.getInitializer();
 	let out = "";
@@ -750,6 +764,10 @@ function compileNode(node: Node, inFunction = false): string {
 		case ts.SyntaxKind.WhileStatement:
 			return handleWhileStatement(
 				node.asKindOrThrow(ts.SyntaxKind.WhileStatement)
+			);
+		case ts.SyntaxKind.DoStatement:
+			return handleDoStatement(
+				node.asKindOrThrow(ts.SyntaxKind.DoStatement)
 			);
 
 		case ts.SyntaxKind.ForInStatement:

@@ -158,6 +158,11 @@ hookGameEvent("weapon_fire", (params) => {
 	// 	player.TakeDamage(10, 1, player);
 	// });
 
+	// Should only print 1 once!
+	do {
+		printl("1");
+	} while (2 + 2 == 3);
+
 	for (let i = 0; i < 5; i++) {
 		if (i == 1) {
 			printl("continue");
