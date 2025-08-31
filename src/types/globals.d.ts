@@ -65,6 +65,10 @@ declare global {
 		toupper(): string;
 	}
 
+	export type Record<K extends string | number, V> = {
+		[P in K]: V;
+	};
+
 	/**
 	 * Format specifiers:
 	 *

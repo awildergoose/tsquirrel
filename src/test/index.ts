@@ -1,4 +1,6 @@
-import { deepPrintTable, Promise, pushPlayer } from "./std";
+import { pushPlayer } from "./std/player";
+import { Promise } from "./std/promise";
+import { deepPrintTable } from "./std/table";
 
 // const myTable = {
 // 	a: 3,

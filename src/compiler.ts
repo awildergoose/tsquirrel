@@ -750,6 +750,7 @@ function compileNode(node: Node, inFunction = false): string {
 			return "\n";
 		// TypeScript types
 		case ts.SyntaxKind.TypeAliasDeclaration:
+		case ts.SyntaxKind.ExportDeclaration:
 			return "\n";
 		case ts.SyntaxKind.ThrowStatement:
 			return `throw ${handleExpression(
