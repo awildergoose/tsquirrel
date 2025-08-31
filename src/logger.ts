@@ -1,15 +1,15 @@
 import { blue, gray, green, red, yellow } from "colorette";
 
 export default {
-	info: (msg: string) => console.log(`${green("[INFO]")} ${msg}`),
-	warn: (msg: string) => console.log(`${yellow("[WARN]")} ${msg}`),
-	error: (msg: string) => console.log(`${red("[ERROR]")} ${msg}`),
-	debug: (msg: string) => console.log(`${blue("[DEBUG]")} ${msg}`),
-	trace: (msg: string) => {
+	info: (msg: any) => console.log(`${green("[INFO]")} ${msg}`),
+	warn: (msg: any) => console.log(`${yellow("[WARN]")} ${msg}`),
+	error: (msg: any) => console.log(`${red("[ERROR]")} ${msg}`),
+	debug: (msg: any) => console.log(`${blue("[DEBUG]")} ${msg}`),
+	trace: (msg: any) => {
 		console.log(`${gray("[TRACE]")} ${msg}`);
 		console.trace();
 	},
-	traceWarn: (msg: string) => {
+	traceWarn: (msg: any) => {
 		console.log(`${yellow("[WARN]")} ${msg}`);
 		console.trace();
 	},

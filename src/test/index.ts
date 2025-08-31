@@ -1,3 +1,4 @@
+import { randRange } from "./std/math";
 import { pushPlayer } from "./std/player";
 import { Promise } from "./std/promise";
 import { deepPrintTable } from "./std/table";
@@ -146,13 +147,13 @@ hookGameEvent("weapon_fire", (params) => {
 	pushPlayer(player, player.EyeAngles().Forward(), 2000);
 
 	new Promise<number>((resolve, reject) => {
-		resolve(69);
-	}).then(
-		(val) => {
+		if (randRange(100) >= 50) resolve(69);
+		else reject("Stupid!!");
+	})
+		.then((val) => {
 			print(val);
-		},
-		(err) => {
-			throw err;
-		}
-	);
+		})
+		.andCatch((err) => {
+			print(format("FireError: %s", err));
+		});
 });

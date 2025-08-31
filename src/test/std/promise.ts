@@ -1,17 +1,17 @@
-export class Promise<T> {
+export class Promise<K> {
 	private state: "pending" | "fulfilled" | "rejected" = "pending";
-	private value: T | null = null;
+	private value: K | null = null;
 	private reason: any = null;
-	private handlers: ((val: T) => void)[] = [];
+	private handlers: ((val: K) => void)[] = [];
 	private catchHandlers: ((err: any) => void)[] = [];
 
 	constructor(
 		executor: (
-			resolve: (val: T) => void,
+			resolve: (val: K) => void,
 			reject: (err: any) => void
 		) => void
 	) {
-		const resolve = (val: T) => {
+		const resolve = (val: K) => {
 			if (this.state !== "pending") return;
 			this.state = "fulfilled";
 			this.value = val;
@@ -32,23 +32,17 @@ export class Promise<T> {
 		}
 	}
 
-	then(
-		onFulfilled: (val: T) => void,
-		onRejected: (err: any) => void
-	): Promise<T> {
+	then(onFulfilled: (val: K) => void): Promise<K> {
 		if (this.state === "fulfilled" && this.value != null) {
 			onFulfilled(this.value);
-		} else if (this.state === "rejected" && onRejected) {
-			onRejected(this.reason);
 		} else {
 			this.handlers.push(onFulfilled);
-			if (onRejected) this.catchHandlers.push(onRejected);
 		}
 
 		return this;
 	}
 
-	andCatch(onRejected: (err: any) => void): Promise<T> {
+	andCatch(onRejected: (err: any) => void): Promise<K> {
 		if (this.state === "rejected") {
 			onRejected(this.reason);
 		} else {
