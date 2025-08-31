@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import { Cli, Command, Option } from "clipanion";
 import { watch } from "fs";
 import { Project } from "ts-morph";

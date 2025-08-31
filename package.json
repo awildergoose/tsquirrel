@@ -1,8 +1,10 @@
 {
-	"name": "tsquirrel",
+	"name": "@tsqrl/core",
 	"module": "src/index.ts",
+	"main": "src/index.ts",
 	"type": "module",
-	"private": true,
+	"version": "0.0.1",
+	"private": false,
 	"devDependencies": {
 		"@types/bun": "latest"
 	},
@@ -19,5 +21,8 @@
 		"clipanion": "^4.0.0-rc.4",
 		"colorette": "^2.0.20",
 		"ts-morph": "^26.0.0"
+	},
+	"bin": {
+		"tsqrl": "src/index.ts"
 	}
 }
