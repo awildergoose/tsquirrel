@@ -22,6 +22,7 @@ class CompileCommand extends Command {
 	private project!: Project;
 
 	async execute() {
+		if (!this.watchRecreatesProject) this.project = this.createProject();
 		await this.compileAndCheck();
 
 		if (this.watchMode) {
