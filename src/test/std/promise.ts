@@ -11,18 +11,20 @@ export class Promise<K> {
 			reject: (err: any) => void
 		) => void
 	) {
+		const self = this;
+
 		const resolve = (val: K) => {
-			if (this.state !== "pending") return;
-			this.state = "fulfilled";
-			this.value = val;
-			for (const h of this.handlers) h(val);
+			if (self.state !== "pending") return;
+			self.state = "fulfilled";
+			self.value = val;
+			for (const h of self.handlers) h(val);
 		};
 
 		const reject = (err: any) => {
-			if (this.state !== "pending") return;
-			this.state = "rejected";
-			this.reason = err;
-			for (const h of this.catchHandlers) h(err);
+			if (self.state !== "pending") return;
+			self.state = "rejected";
+			self.reason = err;
+			for (const h of self.catchHandlers) h(err);
 		};
 
 		try {
@@ -38,7 +40,6 @@ export class Promise<K> {
 		} else {
 			this.handlers.push(onFulfilled);
 		}
-
 		return this;
 	}
 

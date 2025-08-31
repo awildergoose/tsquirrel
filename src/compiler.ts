@@ -1,29 +1,29 @@
 import {
-	ArrowFunction,
-	BinaryExpression,
-	CallExpression,
-	ClassDeclaration,
-	ConditionalExpression,
-	EnumDeclaration,
-	Expression,
-	ExpressionStatement,
-	ForInStatement,
-	ForOfStatement,
-	ForStatement,
-	FunctionDeclaration,
-	IfStatement,
-	Node,
-	ObjectLiteralExpression,
-	ParameterDeclaration,
-	Project,
-	ReturnStatement,
-	SourceFile,
-	TemplateExpression,
-	TryStatement,
-	ts,
-	VariableDeclarationList,
-	VariableStatement,
-	WhileStatement,
+    ArrowFunction,
+    BinaryExpression,
+    CallExpression,
+    ClassDeclaration,
+    ConditionalExpression,
+    EnumDeclaration,
+    Expression,
+    ExpressionStatement,
+    ForInStatement,
+    ForOfStatement,
+    ForStatement,
+    FunctionDeclaration,
+    IfStatement,
+    Node,
+    ObjectLiteralExpression,
+    ParameterDeclaration,
+    Project,
+    ReturnStatement,
+    SourceFile,
+    TemplateExpression,
+    TryStatement,
+    ts,
+    VariableDeclarationList,
+    VariableStatement,
+    WhileStatement,
 } from "ts-morph";
 import log from "./logger";
 
@@ -507,9 +507,15 @@ function handleFunctionDeclaration(node: FunctionDeclaration) {
 	});
 
 	let out = "";
+	const isExported = node.hasModifier(ts.SyntaxKind.ExportKeyword);
 
 	withScope(ScopeKind.Function, () => {
-		out += `function ${fnName}(${params}) {\n`;
+		if (isExported) {
+			out += `::${fnName} <- function(${params}) {\n`;
+		} else {
+			out += `function ${fnName}(${params}) {\n`;
+		}
+
 		defaults.forEach((line) => (out += `${line}\n`));
 		out += handleBlockOrStatement(fnBody, false);
 		out += "}\n";

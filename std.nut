@@ -1,42 +1,18 @@
 // TSquirrel Standard Library
 
 // Float
-function ftoi(n) {
-	return n.tointeger();
-}
-
-function ftos(n) {
-	return n.tostring();
-}
-
-function ftoc(n) {
-	return n.tochar();
-}
+::ftoi <- function(n) { return n.tointeger(); }
+::ftos <- function(n) { return n.tostring(); }
+::ftoc <- function(n) { return n.tochar(); }
 
 // Integer
-function itoc(n) {
-	return n.tochar();
-}
-function itof(n) {
-	return n.tofloat();
-}
-function itos(n) {
-	return n.tostring();
-}
+::itoc <- function(n) { return n.tochar(); }
+::itof <- function(n) { return n.tofloat(); }
+::itos <- function(n) { return n.tostring(); }
 
 // Function
-function acall(fn, args) {
-	return fn.acall(args)
-}
+::acall <- function(fn, args) { return fn.acall(args); }
+::bindenv <- function(fn, contextObject) { return fn.bindenv(contextObject); }
+::pacall <- function(fn, arguments) { return fn.pacall(arguments); }
 
-function bindenv(fn, contextObject) {
-	return f.bindenv(fn, contextObject)
-}
-
-function pacall(fn, arguments) {
-	return fn.pacall(fn, arguments)
-}
-
-function typeOf(a) {
-	return typeof(a)
-}
+::typeOf <- function(a) { return typeof a; }

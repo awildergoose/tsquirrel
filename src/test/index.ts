@@ -1,5 +1,4 @@
 import { randRange } from "./std/math";
-import { forEachPlayer, pushPlayer } from "./std/player";
 import { Promise } from "./std/promise";
 import { deepPrintTable } from "./std/table";
 
@@ -144,7 +143,7 @@ hookGameEvent("infected_hurt", (params) => {
 hookGameEvent("weapon_fire", (params) => {
 	const player = GetPlayerFromUserID(params.userid);
 
-	pushPlayer(player, player.EyeAngles().Forward(), 2000);
+	// pushPlayer(player, player.EyeAngles().Forward(), 2000);
 
 	new Promise<number>((resolve, reject) => {
 		// randRange here is undefined,
@@ -153,13 +152,13 @@ hookGameEvent("weapon_fire", (params) => {
 		else reject("Stupid!!");
 	})
 		.then((val) => {
-			printl(format("promise returned: %s\n", val));
+			printl(format("promise returned: %d\n", val));
 		})
 		.andCatch((err) => {
-			printl(format("FireError: %s\n", err));
+			printl(format("FireError: %s", err));
 		});
 
-	forEachPlayer((player) => {
-		player.TakeDamage(10, 1, player);
-	});
+	// forEachPlayer((player) => {
+	// 	player.TakeDamage(10, 1, player);
+	// });
 });
