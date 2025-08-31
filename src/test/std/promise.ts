@@ -11,20 +11,18 @@ export class Promise<K> {
 			reject: (err: any) => void
 		) => void
 	) {
-		const self = this;
-
 		const resolve = (val: K) => {
-			if (self.state !== "pending") return;
-			self.state = "fulfilled";
-			self.value = val;
-			for (const h of self.handlers) h(val);
+			if (this.state !== "pending") return;
+			this.state = "fulfilled";
+			this.value = val;
+			for (const h of this.handlers) h(val);
 		};
 
 		const reject = (err: any) => {
-			if (self.state !== "pending") return;
-			self.state = "rejected";
-			self.reason = err;
-			for (const h of self.catchHandlers) h(err);
+			if (this.state !== "pending") return;
+			this.state = "rejected";
+			this.reason = err;
+			for (const h of this.catchHandlers) h(err);
 		};
 
 		try {
@@ -37,7 +35,7 @@ export class Promise<K> {
 	then(onFulfilled: (val: K) => void): Promise<K> {
 		if (this.state === "fulfilled" && this.value != null) {
 			onFulfilled(this.value);
-		} else {
+		} else if (this.state === "pending") {
 			this.handlers.push(onFulfilled);
 		}
 		return this;
@@ -46,7 +44,7 @@ export class Promise<K> {
 	andCatch(onRejected: (err: any) => void): Promise<K> {
 		if (this.state === "rejected") {
 			onRejected(this.reason);
-		} else {
+		} else if (this.state === "pending") {
 			this.catchHandlers.push(onRejected);
 		}
 		return this;
