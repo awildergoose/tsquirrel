@@ -44,10 +44,6 @@ import { deepPrintTable } from "./std/table";
 
 // add(2, 4);
 
-// for (let i = 0; i < 3; i++) {
-// 	print("Hi!!!\n");
-// }
-
 // class Person {
 // 	name: string;
 // 	age: number;
@@ -161,4 +157,16 @@ hookGameEvent("weapon_fire", (params) => {
 	// forEachPlayer((player) => {
 	// 	player.TakeDamage(10, 1, player);
 	// });
+
+	for (let i = 0; i < 5; i++) {
+		if (i == 1) {
+			printl("continue");
+			continue;
+		}
+		if (i == 4) {
+			printl("break");
+			break;
+		}
+		print("Hi!!!\n");
+	}
 });

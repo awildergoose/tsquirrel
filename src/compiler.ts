@@ -245,6 +245,7 @@ function handleExpression(node: Expression): string {
 		case ts.SyntaxKind.NullKeyword:
 		case ts.SyntaxKind.ThisKeyword:
 		case ts.SyntaxKind.BreakStatement:
+		case ts.SyntaxKind.ContinueStatement:
 			return node.getText();
 		case ts.SyntaxKind.NumericLiteral:
 			return node
@@ -653,7 +654,7 @@ function handleEnumDeclaration(node: EnumDeclaration) {
 	const members = node.getMembers().map((member) => {
 		const initializer = member.getInitializer();
 		const value = initializer ? handleExpression(initializer) : "";
-		return `\t${member.getName()}${value ? ` = ${value}` : ""}`;
+		return `${member.getName()}${value ? ` = ${value}` : ""}`;
 	});
 
 	return `enum ${node.getName()} {\n${members.join(",\n")}\n}\n`;
@@ -788,6 +789,8 @@ function compileNode(node: Node, inFunction = false): string {
 			)}\n`;
 		case ts.SyntaxKind.NumericLiteral:
 		case ts.SyntaxKind.StringLiteral:
+		case ts.SyntaxKind.ContinueStatement:
+		case ts.SyntaxKind.BreakStatement:
 		case ts.SyntaxKind.Identifier:
 			return `${node.getText()}\n`;
 
