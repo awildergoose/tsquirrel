@@ -1228,7 +1228,7 @@ Can return value for expired contexts
 	 * Get the owner entity, if there is one.
 	 * @returns handle
 	 */
-	GetOwnerEntity(): CBaseEntity?;
+	GetOwnerEntity(): CBaseEntity | null;
 
 	/**
 	 * Get the entity name stripped of template unique decoration.
@@ -3424,11 +3424,11 @@ Using 0 for value parameter mistakenly converts it to empty string. Use "0" inst
 
 	/**
 	 * Fills invTable with the specified player's inventory.
-	 * @param player CTerrorPLayer
+	 * @param player CTerrorPlayer
 	 * @param invTable table
 	 * @returns void
 	 */
-	function GetInvTable(player: CTerrorPLayer, invTable: table): void;
+	function GetInvTable(player: CTerrorPlayer, invTable: table): void;
 
 	/**
 	 * Returns the velocity of the entity.
@@ -3490,10 +3490,10 @@ Using 0 for value parameter mistakenly converts it to empty string. Use "0" inst
 	/**
 	 * Rotate a QAngle by another QAngle.
 	 * @param arg QAngle
-	 * @param arg QAngle
+	 * @param arg2 QAngle
 	 * @returns QAngle
 	 */
-	function RotateOrientation(arg: QAngle, arg: QAngle): QAngle;
+	function RotateOrientation(arg: QAngle, arg2: QAngle): QAngle;
 
 	/**
 	 * Rotate the input Vector around an origin.
@@ -3561,6 +3561,714 @@ Using 0 for value parameter mistakenly converts it to empty string. Use "0" inst
 	 * @returns bool
 	 */
 	function ZSpawn(spawnTable: table): boolean;
+
+	/**
+ * Test value and if not true, throws an exception string "Assertion failed".
+
+If msg parameter is set, then an exception string will be "Assertion failed: your message".
+ * @param value bool
+ * @param msg string
+ * @returns void
+ */
+	function Assert(value: boolean, msg: string): void;
+
+	/**
+	 * Helper for picking a random special stage based on stage_info table.
+	 * @param arg1 level
+	 * @param arg2 stage_list
+	 * @param arg3 stage_info
+	 * @returns void
+	 */
+	function CheckForSpecialStage(
+		arg1: unknown,
+		arg2: unknown,
+		arg3: unknown
+	): void;
+
+	/**
+	 * Empties the tables of game event callback functions.
+	 * @returns void
+	 */
+	function ClearGameEventCallbacks(): void;
+
+	/**
+	 * Removes any tables saved with SaveTable().
+	 * @returns void
+	 */
+	function ClearSavedTables(): void;
+
+	/**
+	 * The current level of the developer console variable.
+	 * @returns int
+	 */
+	function developer(): number;
+
+	/**
+	 *
+	 * @param symbolOrTable unknown
+	 * @param itemIfSymbol unknown
+	 * @param descriptionIfSymbol string
+	 * @returns void
+	 */
+	function Document(
+		symbolOrTable: unknown,
+		itemIfSymbol: unknown,
+		descriptionIfSymbol: string
+	): void;
+
+	/**
+	 * Execute a script. and put all its content for the argument passed to the scope parameter. (internal)
+	 * @param file string
+	 * @param scope handle/table
+	 * @returns bool
+	 */
+	function DoIncludeScript(
+		file: string,
+		scope: SquirrelHandle | table
+	): boolean;
+
+	/**
+	 * Wrapper for DoIncludeScript.
+	 * @param file string
+	 * @param scope handle
+	 * @returns bool
+	 */
+	function IncludeScript(file: string, scope: SquirrelHandle): boolean;
+
+	/**
+ * Generate a string guaranteed to be unique across the life of the script VM. This function requires a string or a null value as an input, otherwise throws an error.
+
+You should use UniqueString function instead, as it is converting any input value to a string before calling this function, making generation process practically errorless.
+ * @param input string/null
+ * @returns string
+ */
+	function DoUniqueString(input: string | undefined): string;
+
+	/**
+	 * Wrapper function. If a string is provided, it'll find the entity by name using the string. But if an integer is provided, it'll be converted to a Script Handle before verifying the entity exists.
+	 * @param idxorname string/int
+	 * @returns handle
+	 */
+	function Ent(idxorname: string | number): SquirrelHandle;
+
+	/**
+ * Reads the file located in left4dead2/ems/path and returns its contents as a string. path supports folders and special names "." and "..", which indicate "current folder" and "parent folder" respectfully.
+
+If file does not exist, a null value will be returned.
+
+If file is longer than 16384 bytes, it will return a null value and print an error "File ems/path (from path) is len [actual file length here] too long for a ScriptFileRead".
+
+Warning:
+if path contains folders, these folders will be created, if missing. Check carefully what you are reading, since there is no way to remove files/folders using VScript.
+ * @param path string
+ * @returns string
+ */
+	function FileToString(path: string): string;
+
+	/**
+	 * Fire a game event to a listening callback function in script. Parameters are passed in a squirrel table.
+	 * @param event string
+	 * @param params table
+	 * @returns string
+	 */
+	function FireGameEvent(event: string, params: table): string;
+
+	/**
+	 * Wrapper for __RunEventCallbacks()
+	 * @param arg event
+	 * @param arg2 params
+	 * @returns void
+	 */
+	function FireScriptEvent(arg: unknown, arg2: unknown): void;
+
+	/**
+	 * Starts the scavenge round, even if the setup timer hasn't elapsed.
+	 * @returns void
+	 */
+	function ForceScavengeStart(): void;
+
+	/**
+	 * Starts the survival round, even if the survivors haven't activated the radio.
+	 * @returns void
+	 */
+	function ForceSurvivalStart(): void;
+
+	/**
+	 * Starts the versus round, even if the survivors haven't left the safe room.
+	 * @returns void
+	 */
+	function ForceVersusStart(): void;
+
+	/**
+	 * Return null if not a survivor, else the survivor's chosen character's name. This does not work with team 4 survivors.
+	 * @param player CTerrorPlayer
+	 * @returns string
+	 */
+	function GetCharacterDisplayName(player: CTerrorPlayer): string;
+
+	/**
+	 * Returns the navigation flow distance from the start to the specified player.
+	 * @param player CTerrorPlayer
+	 * @returns float
+	 */
+	function GetCurrentFlowDistanceForPlayer(player: CTerrorPlayer): number;
+
+	/**
+	 * Returns how far in the navigation flow from the start to the end the player is.
+	 * @param player CTerrorPlayer
+	 * @returns float
+	 */
+	function GetCurrentFlowPercentForPlayer(player: CTerrorPlayer): number;
+
+	/**
+	 * Returns the navigation flow distance from the start to the specified point.
+	 * @param position Vector
+	 * @returns float
+	 */
+	function GetFlowDistanceForPosition(position: Vector): number;
+
+	/**
+	 * Returns how far in the navigation flow from the start to the end the position is.
+	 * @param position Vector
+	 * @param unknown bool
+	 * @returns float
+	 */
+	function GetFlowPercentForPosition(
+		position: Vector,
+		unknown: boolean
+	): number;
+
+	/**
+	 * Returns the navigation flow distance from the start to the end of the level.
+	 * @returns float
+	 */
+	function GetMaxFlowDistance(): number;
+
+	/**
+	 * Returns the navigation flow distance from the start to the survivors position averaged.
+	 * @returns float
+	 */
+	function GetAverageSurvivorFlowDistance(): number;
+
+	/**
+	 * Returns the current difficulty as a numeric value. Easy = 0, Normal = 1, Advanced = 2, Expert = 3.
+	 * @returns int
+	 */
+	function GetDifficulty(): number;
+
+	/**
+	 * Returns the current difficulty as a string. Difficulty names are in z_difficulty cvar style: Easy, Normal, Hard, Impossible.
+	 * @returns string
+	 */
+	function GetDifficultyString(): string;
+
+	/**
+	 * Returns the engine's current frame count.
+	 * @returns void
+	 */
+	function GetFrameCount(): void;
+
+	/**
+	 * Fills statTable with some infected counts/etc... Right now the list is Witches, Tanks, Specials, Commons, though we may add more as requested going forward.
+	 * @param statTable table
+	 * @returns void
+	 */
+	function GetInfectedStats(statTable: table): void;
+
+	/**
+	 * Returns index of model by name.
+	 * @param filename string
+	 * @returns int
+	 */
+	function GetModelIndex(filename: string): number;
+
+	/**
+	 * Returns number of Scavenge items needed.
+	 * @returns int
+	 */
+	function GetScavengeItemsGoal(): number;
+
+	/**
+	 * Returns number of Scavenge items remaining.
+	 * @returns int
+	 */
+	function GetScavengeItemsRemaining(): number;
+
+	/**
+	 * Returns float duration of the sound. Takes soundname and optional actormodelname.
+	 * @param soundname string
+	 * @param actormodel string
+	 * @returns float
+	 */
+	function GetSoundDuration(soundname: string, actormodel: string): number;
+
+	/**
+	 * Returns true if the mode has more than a single difficulty.
+	 * @returns bool
+	 */
+	function HasConfigurableDifficultySetting(): boolean;
+
+	/**
+	 * Returns true if the current mode supports player controlled zombies.
+	 * @returns bool
+	 */
+	function HasPlayerControlledZombies(): boolean;
+
+	/**
+	 * True if the current map is the final map of the campaign. Independent of trigger_finale existence.
+	 * @returns bool
+	 */
+	function IsMissionFinalMap(): boolean;
+
+	/**
+	 * Returns true if this is a dedicated server.
+	 * @returns bool
+	 */
+	function IsDedicatedServer(): boolean;
+
+	/**
+	 * Checks if the modelname is precached.
+	 * @param modelname string
+	 * @returns bool
+	 */
+	function IsModelPrecached(modelname: string): boolean;
+
+	/**
+	 * Checks if the soundname is precached.
+	 * @param soundname string
+	 * @returns bool
+	 */
+	function IsSoundPrecached(soundname: string): boolean;
+
+	/**
+	 * Returns true/false based on whether table[key] is a weak reference
+	 * @param arg table
+	 * @param arg2 unknown
+	 * @returns bool
+	 */
+	function IsWeakref(arg: table, arg2: unknown): boolean;
+
+	/**
+	 * Fills out a table with the local time (second, minute, hour, day, month, year, dayofweek, dayofyear, daylightsavings).
+	 * @param arg table
+	 * @returns void
+	 */
+	function LocalTime(arg: table): void;
+
+	/**
+	 * Precache a model and return index of the model.
+	 * @param filename string
+	 * @returns int
+	 */
+	function PrecacheModel(filename: string): number;
+
+	/**
+	 * Precache a sound.
+	 * @param soundName string
+	 * @returns void
+	 */
+	function PrecacheSound(soundName: string): void;
+
+	/**
+	 * Queue a speech concept.
+	 * @param entity handle
+	 * @param concept string
+	 * @param delay float
+	 * @param criteria string
+	 * @returns void
+	 */
+	function QueueSpeak(
+		entity: SquirrelHandle,
+		concept: string,
+		delay: number,
+		criteria: string
+	): void;
+
+	/**
+	 * Generate a random floating-point number within a range, inclusive.
+	 * @param min float
+	 * @param max float
+	 * @returns float
+	 */
+	function RandomFloat(min: number, max: number): number;
+
+	/**
+	 * Generate a random integer within a range, inclusive.
+	 * @param min int
+	 * @param max int
+	 * @returns int
+	 */
+	function RandomInt(min: number, max: number): number;
+
+	/**
+	 *
+	 * @param func unknown
+	 * @param name string
+	 * @param signature string
+	 * @param description string
+	 * @returns void
+	 */
+	function RegisterFunctionDocumentation(
+		func: unknown,
+		name: string,
+		signature: string,
+		description: string
+	): void;
+
+	/**
+	 * Register as a listener for a game event from script. It's what __CollectGameEventCallbacks() uses to register event callbacks to the C++ code.
+	 * @param eventName string
+	 * @returns void
+	 */
+	function RegisterScriptGameEventListener(eventName: string): void;
+
+	/**
+	 * Reloads the MotD file.
+	 * @returns void
+	 */
+	function ReloadMOTD(): void;
+
+	/**
+	 * Restores table data and deletes it. See L4D2_EMS/Appendix:_Table_Save_Restore.
+	 * @param identifier string
+	 * @param arg table
+	 * @returns void
+	 */
+	function RestoreTable(identifier: string, arg: table): void;
+
+	/**
+	 *
+	 * @param nativeFunction string
+	 * @returns unknown
+	 */
+	function RetrieveNativeSignature(nativeFunction: string): unknown;
+
+	/**
+	 * Add a rule to the decision database. Takes a RRule object from rulescript_base.nut.
+	 * @param rule RRule
+	 * @returns bool
+	 */
+	function rr_AddDecisionRule(rule: unknown): boolean;
+
+	/**
+	 * Supposed to commit the result of QueryBestResponse back to the given entity to play. Takes a table needing the keys response with a ResponseSingle object (defined in response_testbed.nut) and orig_query with an unknown content.
+	 * @param entity handle
+	 * @param airesponse table
+	 * @returns bool
+	 */
+	function rr_CommitAIResponse(
+		entity: SquirrelHandle,
+		airesponse: table
+	): boolean;
+
+	/**
+	 * Retrieve a table of all available expresser targets, in the form { name : handle, name: handle }.
+	 * @returns table
+	 */
+	function rr_GetResponseTargets(): table;
+
+	/**
+	 * Tests query against entity's response system and returns the best response found (or null if none found). Returns a pointer with a null type, that is apparently not usable anywhere. Possibly supposed to return a AI_Response object.
+	 * @param entity handle
+	 * @param query table
+	 * @returns unknown
+	 */
+	function rr_QueryBestResponse(
+		entity: SquirrelHandle,
+		query: table
+	): unknown;
+
+	/**
+	 * Make all common zombies in range rush the victim. (If hVictim isn't set, a random survivor will be chosen.)
+	 * @param hVictim handle
+	 * @param range float
+	 * @returns void
+	 */
+	function RushVictim(hVictim: SquirrelHandle, range: number): void;
+
+	/**
+	 * See L4D2_EMS/Appendix:_Table_Save_Restore.
+	 * @param identifier string
+	 * @param arg table
+	 * @returns void
+	 */
+	function SaveTable(identifier: string, arg: table): void;
+
+	/**
+	 * Start a screenfade with the following parameters.
+	 * @param player handle
+	 * @param red int
+	 * @param green int
+	 * @param blue int
+	 * @param alpha int
+	 * @param fadeTime float
+	 * @param fadeHold float
+	 * @param flags int
+	 * @returns void
+	 */
+	function ScreenFade(
+		player: SquirrelHandle,
+		red: number,
+		green: number,
+		blue: number,
+		alpha: number,
+		fadeTime: number,
+		fadeHold: number,
+		flags: number
+	): void;
+
+	/**
+	 * Start a screenshake with the following parameters.
+	 * @param vecCenter Vector
+	 * @param flAmplitude float
+	 * @param flFrequency float
+	 * @param flDuration float
+	 * @param flRadius float
+	 * @param eCommand int
+	 * @param bAirShake bool
+	 * @returns void
+	 */
+	function ScreenShake(
+		vecCenter: Vector,
+		flAmplitude: number,
+		flFrequency: number,
+		flDuration: number,
+		flRadius: number,
+		eCommand: number,
+		bAirShake: boolean
+	): void;
+
+	/**
+	 * Set the number of Scavenge items needed.
+	 * @param count int
+	 * @returns void
+	 */
+	function SetScavengeItemsGoal(count: number): void;
+
+	/**
+	 * Set the number of Scavenge items remaining.
+	 * @param count int
+	 * @returns void
+	 */
+	function SetScavengeItemsRemaining(count: number): void;
+
+	/**
+	 * Execute a stage table, i.e. move parameters to DirectorOptions, do callbacks and so on.
+	 * @param arg stageInfo
+	 * @param arg2 stageDefaults
+	 * @returns void
+	 */
+	function StageInfo_Execute(arg: unknown, arg2: unknown): void;
+
+	/**
+	 * Tells all existing nextbots to swap into assault mode and not hide/dither/loiter.
+	 * @returns void
+	 */
+	function StartAssault(): void;
+
+	/**
+ * Stores the string into the file located at left4dead2/ems/path. Path can contain folders -- in that case folders will be automatically created. Also path supports special names "." and "..", which indicate "current folder" and "parent folder" respectfully.
+
+Things to consider:
+
+You can save much more than you can read with FileToString() -- you are limited only by script execution time. Check carefully what are you writing!
+Due to a bug, string is saved with zero byte at the end. Such file is still read back properly by FileToString(), but that means you can save only 16383 bytes of useful information if you plan to read the file back.
+There is no way to remove files using VScript.
+ * @param path string
+ * @param string string
+ * @returns void
+ */
+	function StringToFile(path: string, string: string): void;
+
+	/**
+	 * Get the current server time.
+	 * @returns float
+	 */
+	function Time(): number;
+
+	/**
+	 * Uses a configuration table to do a raytrace, puts return information into the table for return usage.
+	 * @param traceTable table
+	 * @returns bool
+	 */
+	function TraceLine(traceTable: table): boolean;
+
+	/**
+	 * Generate a string guaranteed to be unique across the life of the script VM, with an optional root string. Input will be converted to a string by calling tostring() member function of that input, before passing it to DoUniqueString function. Useful for adding data to tables when not sure what keys are already in use in that table. Throws error on null value.
+	 * @param input="" string
+	 * @returns string
+	 */
+	function UniqueString(input = ""): string;
+
+	/**
+	 * Creates a new scope with the name of value in the submitted table (includes unique params).
+	 * @param arg value
+	 * @param scope table
+	 * @returns table
+	 */
+	function VSquirrel_OnCreateScope(arg: unknown, scope: table): table;
+
+	/**
+	 * Removes a scope created via VSquirrel_OnCreateScope.
+	 * @param createdScope table
+	 * @returns void
+	 */
+	function VSquirrel_OnReleaseScope(createdScope: table): void;
+
+	/**
+	 * Wrapper that registers callbacks for both OnGameEvent_x ↑ and OnScriptEvent_ functions. Done using the __CollectEventCallbacks function.
+	 * @param arg scope
+	 * @returns void
+	 */
+	function __CollectGameEventCallbacks(arg: unknown): void;
+
+	/**
+	 * Overloaded function, used by the above one like this: __CollectEventCallbacks(scope, "OnGameEvent_", "GameEventCallbacks", ::RegisterScriptGameEventListener)
+	 * @param arg scope
+	 * @param arg2 prefix
+	 * @param arg3 globalTableName
+	 * @param arg4 regFunc
+	 * @returns void
+	 */
+	function __CollectEventCallbacks(
+		arg: unknown,
+		arg2: unknown,
+		arg3: unknown,
+		arg4: unknown
+	): void;
+
+	/**
+	 *
+	 * @param arg script
+	 * @param arg2 scope
+	 * @returns void
+	 */
+	function __ReplaceClosures(arg: unknown, arg2: unknown): void;
+
+	/**
+	 * Call all functions in the callback array for the given game event.
+	 * @param arg event
+	 * @param arg2 params
+	 * @param arg3 prefix
+	 * @param arg4 globalTableName
+	 * @param arg5 bWarnIfMissing
+	 * @returns void
+	 */
+	function __RunEventCallbacks(
+		arg: unknown,
+		arg2: unknown,
+		arg3: unknown,
+		arg4: unknown,
+		arg5: unknown
+	): void;
+
+	/**
+	 * Processes and adds the given rulesArray table to the talker system. This is an incomplete implementation of custom talker concepts for VScript, but it is mostly functional.
+	 * @param rulesArray handle
+	 * @returns void
+	 */
+	function rr_ProcessRules(rulesArray: SquirrelHandle): void;
+
+	/**
+	 *
+	 * @param speaker CTerrorPlayer
+	 * @param query unknown
+	 * @param soundfile unknown
+	 * @param context unknown
+	 * @param contextToWorld unknown
+	 * @param volume unknown
+	 * @param func unknown
+	 * @returns unknown
+	 */
+	function rr_PlaySoundFile(
+		speaker: CTerrorPlayer,
+		query: unknown,
+		soundfile: unknown,
+		context: unknown,
+		contextToWorld: unknown,
+		volume: unknown,
+		func: unknown
+	): unknown;
+
+	/**
+	 * Print function that works similarly to printl() but prepends RR_TESTBED: to the start of the message.
+	 * @param message string
+	 * @returns void
+	 */
+	function rrDebugPrint(message: string): void;
+
+	/**
+	 *
+	 * @param resp unknown
+	 * @returns unknown
+	 */
+	function rr_ProcessResponse(resp: unknown): unknown;
+
+	/**
+	 * Print a table without searching through subtables to the console. Works with classes as well (not instances).
+	 * @param table handle
+	 * @returns void
+	 */
+	function PrintTable(table: SquirrelHandle): void;
+
+	/**
+	 *
+	 * @param crit unknown
+	 * @returns unknown
+	 */
+	function rr_ProcessCriterion(crit: unknown): unknown;
+
+	/**
+	 *
+	 * @param speaker CTerrorPlayer
+	 * @param query unknown
+	 * @param soundName unknown
+	 * @param context unknown
+	 * @param contextToWorld unknown
+	 * @param func unknown
+	 * @returns unknown
+	 */
+	function rr_EmitSound(
+		speaker: CTerrorPlayer,
+		query: unknown,
+		soundName: unknown,
+		context: unknown,
+		contextToWorld: unknown,
+		func: unknown
+	): unknown;
+
+	/**
+	 *
+	 * @param speaker CTerrorPlayer
+	 * @param query unknown
+	 * @returns unknown
+	 */
+	function rr_CharacterSpeak(speaker: CTerrorPlayer, query: unknown): unknown;
+
+	/**
+	 *
+	 * @param speaker CTerrorPlayer
+	 * @param query unknown
+	 * @param contextData unknown
+	 * @param contextToWorld unknown
+	 * @param func unknown
+	 * @returns unknown
+	 */
+	function rr_ApplyContext(
+		speaker: CTerrorPlayer,
+		query: unknown,
+		contextData: unknown,
+		contextToWorld: unknown,
+		func: unknown
+	): unknown;
+
+	/**
+	 * Prints a table (non-recursive)
+	 * @param table handle
+	 * @param string prefix
+	 * @returns void
+	 */
+	function rrPrintTable(table: SquirrelHandle, prefix = "\t"): void;
 }
 
 export {};
