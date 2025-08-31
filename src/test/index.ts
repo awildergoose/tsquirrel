@@ -147,6 +147,8 @@ hookGameEvent("weapon_fire", (params) => {
 	pushPlayer(player, player.EyeAngles().Forward(), 2000);
 
 	new Promise<number>((resolve, reject) => {
+		// randRange here is undefined,
+		// Could this be because it doesn't use `::randRange` in the compiled code?
 		if (randRange(100) >= 50) resolve(69);
 		else reject("Stupid!!");
 	})
