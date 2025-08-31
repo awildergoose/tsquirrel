@@ -1,5 +1,5 @@
 import { randRange } from "./std/math";
-import { pushPlayer } from "./std/player";
+import { forEachPlayer, pushPlayer } from "./std/player";
 import { Promise } from "./std/promise";
 import { deepPrintTable } from "./std/table";
 
@@ -151,9 +151,13 @@ hookGameEvent("weapon_fire", (params) => {
 		else reject("Stupid!!");
 	})
 		.then((val) => {
-			print(val);
+			printl(format("promise returned: %s", val));
 		})
 		.andCatch((err) => {
-			print(format("FireError: %s", err));
+			printl(format("FireError: %s", err));
 		});
+
+	forEachPlayer((player) => {
+		player.TakeDamage(10, 1, player);
+	});
 });
