@@ -1,10 +1,11 @@
-export const PI = 3.141592653589793;
-
 export function randRange(min: number, max?: number) {
 	if (max === null) {
 		max = min;
 		min = 0;
 	}
 
-	return floor(rand() * (max! - min + 1)) + min;
+	printl(format("Min: %d Max: %d", min, max));
+
+	const r = itof(rand()) / itof(RAND_MAX);
+	return floor(r * (max! - min + 1)) + min;
 }

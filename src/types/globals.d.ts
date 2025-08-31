@@ -69,6 +69,19 @@ declare global {
 		[P in K]: V;
 	};
 
+	const _charsize_ = 1;
+	const _floatsize_ = 4;
+	const _intsize_ = 4;
+	const _version_ = "Squirrel 3.0.4 stable";
+	const _versionnumber_ = 304;
+	const RAND_MAX = 32767;
+	const SPAWN_FLAGS = {
+		SPAWN = 1,
+		NOSPAWN = 2,
+		TARGETSPAWN = 4,
+	};
+	const PI = 3.14159;
+
 	/**
 	 * Format specifiers:
 	 *

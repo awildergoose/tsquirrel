@@ -148,11 +148,11 @@ hookGameEvent("weapon_fire", (params) => {
 	new Promise<number>((resolve, reject) => {
 		// randRange here is undefined,
 		// Could this be because it doesn't use `::randRange` in the compiled code?
-		if (randRange(100) >= 50) resolve(69);
+		if (randRange(100) >= 50) resolve(randRange(100));
 		else reject("Stupid!!");
 	})
 		.then((val) => {
-			printl(format("promise returned: %d\n", val));
+			printl(format("promise returned: %d", val));
 		})
 		.andCatch((err) => {
 			printl(format("FireError: %s", err));
