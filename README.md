@@ -2,18 +2,14 @@
 
 This project transpiles TypeScript projects into [VScript](https://developer.valvesoftware.com/wiki/VScript) / [Squirrel](http://squirrel-lang.org/), mainly made for Valve's [Left 4 Dead 2](https://store.steampowered.com/app/550/Left_4_Dead_2/).
 
-## Installation
+## Installation / Usage
 
-You can run the compiler by running the `watch` script from the package.json
-To run in a standard (non-valve) Squirrel environment, you may use:
+You can run the transpiler by running the `watch` script from the package.json<br />
 
--   Please note: This requires you to compile Squirrel yourself,
--   You can do this by downloading and compiling the source code from [here](https://github.com/albertodemichelis/squirrel/releases/tag/v3.2).
--   I managed to compile Squirrel using CMake, Find what works best for you.
+To test in a standard (non-Valve) Squirrel environment:<br />
 
-```bash
-bun watchtest
-```
+1. You'll need to compile Squirrel yourself from [here](https://github.com/albertodemichelis/squirrel/releases/tag/v3.2). (CMake worked for me, use whatever works best for you though)
+2. Run the `watchtest` script from the package.json<br /> <br />
 
 > This project is not affiliated with Valve.<br>
 > All trademarks belong to their owners.
