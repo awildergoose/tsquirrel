@@ -56,6 +56,8 @@ declare global {
 	}
 
 	class String {
+		[n: number]: T;
+
 		find(searchString: string, startIndex: number): number | null;
 		len(): number;
 		slice(startIndex: number, endIndex?: number): string;
@@ -123,9 +125,9 @@ declare global {
 	 *
 	 * @param {string} text String to split
 	 * @param {string} delimiter Delimiter to split the string by
-	 * @returns {Array<String>} Array containing the string split by the delimiter
+	 * @returns {string[]} Array containing the string split by the delimiter
 	 */
-	function split(text: string, delimiter: string): Array<String>;
+	function split(text: string, delimiter: string): string[];
 	/**
 	 * Strip all whitespace from both sides of the string
 	 *

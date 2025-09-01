@@ -1,8 +1,3 @@
-import { randRange } from "./std/math";
-import { forEachPlayer } from "./std/player";
-import { Promise } from "./std/promise";
-import { deepPrintTable } from "./std/table";
-
 // const myTable = {
 // 	a: 3,
 // 	b: 7,
@@ -133,43 +128,89 @@ import { deepPrintTable } from "./std/table";
 // const v = Vector(2, 3, 5);
 // v.mul(5);
 
-hookGameEvent("infected_hurt", (params) => {
-	deepPrintTable(params);
-});
+// hookGameEvent("infected_hurt", (params) => {
+// 	deepPrintTable(params);
+// });
 
-hookGameEvent("weapon_fire", (params) => {
-	const player = GetPlayerFromUserID(params.userid);
+// hookGameEvent("weapon_fire", (params) => {
+// 	const player = GetPlayerFromUserID(params.userid);
 
-	// pushPlayer(player, player.EyeAngles().Forward(), 2000);
+// 	// pushPlayer(player, player.EyeAngles().Forward(), 2000);
 
-	new Promise<number>((resolve, reject) => {
-		if (randRange(100) >= 50) resolve(randRange(100));
-		else reject("Stupid!!");
-	})
-		.andThen((val) => {
-			printl(format("promise returned: %d", val));
-		})
-		.andCatch((err) => {
-			printl(format("FireError: %s", err));
-		});
+// 	new Promise<number>((resolve, reject) => {
+// 		if (randRange(100) >= 50) resolve(randRange(100));
+// 		else reject("Stupid!!");
+// 	})
+// 		.andThen((val) => {
+// 			printl(format("promise returned: %d", val));
+// 		})
+// 		.andCatch((err) => {
+// 			printl(format("FireError: %s", err));
+// 		});
 
-	forEachPlayer((player) => {
-		player.TakeDamage(10, 1, player);
-	});
-});
+// 	forEachPlayer((player) => {
+// 		player.TakeDamage(10, 1, player);
+// 	});
+// });
 
-function* idk() {
-	for (let n = 1; true; n *= 2) yield n;
+// function* idk() {
+// 	for (let n = 1; true; n *= 2) yield n;
+// }
+
+// let x = 100;
+
+// for (let [i, pow] of idk() as [number, number][]) {
+// 	if (pow >= x) {
+// 		x = pow;
+// 		printl(format("X: %d", x));
+// 		break;
+// 	}
+// }
+
+// printl(format("X: %d", x));
+
+/** @jsx h */
+/** @jsxFrag Fragment */
+import { createSignal, h, render } from "./react";
+
+const [score, setScore] = createSignal(0);
+const [clock, setClock] = createSignal("");
+
+const ui = (
+	<HUD>
+		<Text
+			name="scoreLine"
+			slot={"middle-top"}
+			x={0.3}
+			y={0.05}
+			w={0.4}
+			h={0.1}
+		>
+			{"Score: "}
+			{() => score()}
+		</Text>
+
+		<Text
+			name="ticker"
+			slot={"ticker"}
+			x={0.25}
+			y={0.04}
+			w={0.4}
+			h={0.08}
+			style={"align-center|nobg"}
+		>
+			{() => "[Event] " + clock()}
+		</Text>
+	</HUD>
+);
+
+function InitHUD() {
+	render(ui);
 }
 
-let x = 100;
-
-for (let [i, pow] of idk() as [number, number][]) {
-	if (pow >= x) {
-		x = pow;
-		printl(format("X: %d", x));
-		break;
-	}
+function OnGameEvent_weapon_fire(params: any) {
+	setScore(score() + 1);
+	setClock("weapon_fire");
 }
 
-printl(format("X: %d", x));
+InitHUD();

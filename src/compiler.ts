@@ -14,6 +14,9 @@ import {
 	ForStatement,
 	FunctionDeclaration,
 	IfStatement,
+	JsxElement,
+	JsxFragment,
+	JsxSelfClosingElement,
 	Node,
 	ObjectLiteralExpression,
 	ParameterDeclaration,
@@ -181,8 +184,121 @@ function handleArrowFunction(node: ArrowFunction) {
 	return out;
 }
 
+function handleJsxElement(jsx: JsxElement): string {
+	const tag = jsx.getOpeningElement().getTagNameNode().getText();
+
+	const props = jsx
+		.getOpeningElement()
+		.getAttributes()
+		.map((attr) => {
+			if (attr.isKind(ts.SyntaxKind.JsxAttribute)) {
+				const name = attr.getNameNode().getText();
+				const init = attr.getInitializer();
+				if (!init) return `${name}: true`;
+
+				if (init.isKind(ts.SyntaxKind.StringLiteral)) {
+					return `${name}: ${JSON.stringify(init.getLiteralText())}`;
+				}
+
+				if (init.isKind(ts.SyntaxKind.JsxExpression)) {
+					const expr = init.getExpression();
+					return `${name}: ${expr ? handleExpression(expr) : "true"}`;
+				}
+			}
+			return "";
+		});
+
+	const children = jsx
+		.getJsxChildren()
+		.map((child) => {
+			if (child.isKind(ts.SyntaxKind.JsxText)) {
+				const txt = child.getText().trim();
+				return txt ? JSON.stringify(txt) : null;
+			}
+			if (child.isKind(ts.SyntaxKind.JsxExpression)) {
+				const expr = child.getExpression();
+				return expr ? handleExpression(expr) : null;
+			}
+			if (child.isKind(ts.SyntaxKind.JsxElement)) {
+				return handleJsxElement(child);
+			}
+			if (child.isKind(ts.SyntaxKind.JsxSelfClosingElement)) {
+				return handleJsxSelfClosing(child);
+			}
+			return null;
+		})
+		.filter(Boolean);
+
+	return `h("${tag}", { ${props.filter(Boolean).join(", ")} }${
+		children.length ? ", " + children.join(", ") : ""
+	})`;
+}
+
+function handleJsxSelfClosing(node: JsxSelfClosingElement): string {
+	const tag = node.getTagNameNode().getText();
+
+	const props = node.getAttributes().map((attr) => {
+		if (attr.isKind(ts.SyntaxKind.JsxAttribute)) {
+			const name = attr.getNameNode().getText();
+			const init = attr.getInitializer();
+			if (!init) return `${name}: true`;
+
+			if (init.isKind(ts.SyntaxKind.StringLiteral)) {
+				return `${name}: ${JSON.stringify(init.getLiteralText())}`;
+			}
+
+			if (init.isKind(ts.SyntaxKind.JsxExpression)) {
+				const expr = init.getExpression();
+				return `${name}: ${expr ? handleExpression(expr) : "true"}`;
+			}
+		}
+		return "";
+	});
+
+	return `h("${tag}", { ${props.filter(Boolean).join(", ")} })`;
+}
+
+function handleJsxFragment(frag: JsxFragment): string {
+	const children = frag
+		.getChildren()
+		.map((c) => {
+			if (c.isKind(ts.SyntaxKind.JsxText)) {
+				const txt = c.getText().trim();
+				return txt ? JSON.stringify(txt) : null;
+			}
+			if (c.isKind(ts.SyntaxKind.JsxExpression)) {
+				const expr = c.getExpression();
+				return expr ? handleExpression(expr) : null;
+			}
+			if (c.isKind(ts.SyntaxKind.JsxElement)) {
+				return handleJsxElement(c);
+			}
+			if (c.isKind(ts.SyntaxKind.JsxSelfClosingElement)) {
+				return handleJsxSelfClosing(c);
+			}
+			return null;
+		})
+		.filter(Boolean);
+
+	return `h(Fragment, null${
+		children.length ? ", " + children.join(", ") : ""
+	})`;
+}
+
 function handleExpression(node: Expression): string {
 	switch (node.getKind()) {
+		case ts.SyntaxKind.JsxElement:
+			return handleJsxElement(
+				node.asKindOrThrow(ts.SyntaxKind.JsxElement)
+			);
+		case ts.SyntaxKind.JsxSelfClosingElement:
+			return handleJsxSelfClosing(
+				node.asKindOrThrow(ts.SyntaxKind.JsxSelfClosingElement)
+			);
+		case ts.SyntaxKind.JsxFragment:
+			return handleJsxFragment(
+				node.asKindOrThrow(ts.SyntaxKind.JsxFragment)
+			);
 		case ts.SyntaxKind.ArrowFunction:
 			return handleArrowFunction(
 				node.asKindOrThrow(ts.SyntaxKind.ArrowFunction)
@@ -241,7 +357,7 @@ function handleExpression(node: Expression): string {
 		case ts.SyntaxKind.PrefixUnaryExpression:
 		case ts.SyntaxKind.PostfixUnaryExpression:
 		case ts.SyntaxKind.StringLiteral:
-		case ts.SyntaxKind.ArrayLiteralExpression:
+		case ts.SyntaxKind.ArrayLiteralExpression: // TODO parse this properly
 		case ts.SyntaxKind.TrueKeyword:
 		case ts.SyntaxKind.FalseKeyword:
 		case ts.SyntaxKind.NullKeyword:
@@ -291,6 +407,14 @@ function handleExpression(node: Expression): string {
 		case ts.SyntaxKind.ForStatement:
 			return handleForStatement(
 				node.asKindOrThrow(ts.SyntaxKind.ForStatement)
+			);
+		case ts.SyntaxKind.TryStatement:
+			return handleTryStatement(
+				node.asKindOrThrow(ts.SyntaxKind.TryStatement)
+			);
+		case ts.SyntaxKind.ForOfStatement:
+			return handleForOfStatement(
+				node.asKindOrThrow(ts.SyntaxKind.ForOfStatement)
 			);
 		default: {
 			const filePath = node.getSourceFile().getFilePath();
@@ -470,6 +594,8 @@ function handleExpressionStatement(node: ExpressionStatement) {
 			return `yield${rest}\n`;
 		}
 
+		case ts.SyntaxKind.PostfixUnaryExpression:
+			return node.getText();
 		default:
 			const filePath = expr.getSourceFile().getFilePath();
 			const line = expr.getStartLineNumber();
@@ -477,7 +603,7 @@ function handleExpressionStatement(node: ExpressionStatement) {
 				`Unknown expression statement type: ${expr.getKindName()} in ${filePath}:${line}`
 			);
 
-			return `${expr.getText()} /* Unknown expr statement type ${expr.getKindName()} */\n`;
+			return `${expr.getText()} /* Unknown expression statement type ${expr.getKindName()} */\n`;
 	}
 }
 
@@ -693,6 +819,7 @@ function handleTryStatement(node: TryStatement) {
 	const catchBlock = catchClause
 		? handleBlockOrStatement(catchClause.getBlock())
 		: "";
+	// TODO fix catch not having a var name and defaulting to undefined
 
 	if (catchBlock) {
 		const varName = catchClause!.getVariableDeclaration()?.getText();
