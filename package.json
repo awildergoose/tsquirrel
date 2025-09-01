@@ -1,28 +1,33 @@
 {
 	"name": "@tsqrl/core",
-	"module": "src/index.ts",
+	"version": "0.0.2",
 	"main": "src/index.ts",
-	"type": "module",
-	"version": "0.0.1",
-	"private": false,
-	"devDependencies": {
-		"@types/bun": "latest"
+	"module": "src/index.ts",
+	"dependencies": {
+		"clipanion": "^4.0.0-rc.4",
+		"colorette": "^2.0.20",
+		"ts-morph": "^26.0.0"
 	},
 	"peerDependencies": {
 		"typescript": "^5"
 	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/awildergoose/tsquirrel.git"
+	},
+	"bugs": {
+		"url": "git+https://github.com/awildergoose/tsquirrel/issues"
+	},
+	"homepage": "https://github.com/awildergoose/tsquirrel#readme",
+	"bin": {
+		"tsqrl": "src/index.ts"
+	},
+	"private": false,
 	"scripts": {
 		"watch": "bun --watch src/index.ts --path src/test/tsconfig.json --watch",
 		"watchBadImports": "bun --watch src/index.ts --path src/test/tsconfig.json --watch --no-watch-recreates-project",
 		"watchtest": "bun --watch src/testcompile.ts",
 		"eventsjson": "bun events/convert.ts events/gameevents && bun events/convert.ts events/modevents && bun events/convert.ts events/serverevents"
 	},
-	"dependencies": {
-		"clipanion": "^4.0.0-rc.4",
-		"colorette": "^2.0.20",
-		"ts-morph": "^26.0.0"
-	},
-	"bin": {
-		"tsqrl": "src/index.ts"
-	}
+	"type": "module"
 }

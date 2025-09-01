@@ -1,44 +1,40 @@
-import { spawn } from "bun";
+import { ChildProcessByStdio, spawn } from "child_process";
 import { watch } from "fs";
+import Stream from "stream";
 
 const filename = "out.nut";
 let timeout: NodeJS.Timeout | null = null;
-let currentProc: ReturnType<typeof spawn> | null = null;
+let currentProc: ChildProcessByStdio<
+	null,
+	Stream.Readable,
+	Stream.Readable
+> | null = null;
 
 async function runScript() {
-	if (currentProc)
-		// Kill previous process if still running
-		currentProc.kill("SIGKILL");
+	if (currentProc) currentProc.kill("SIGKILL");
 
-	currentProc = spawn(["bin/sq.exe", filename], {
-		stdout: "pipe",
-		stderr: "pipe",
+	currentProc = spawn("bin/sq.exe", [filename], {
+		stdio: ["ignore", "pipe", "pipe"],
 	});
 
-	(async () => {
-		for await (const chunk of currentProc!.stdout! as ReadableStream) {
-			process.stdout.write(chunk);
-		}
-	})();
+	currentProc.stdout.on("data", (chunk) => {
+		process.stdout.write(chunk);
+	});
 
-	(async () => {
-		for await (const chunk of currentProc!.stderr! as ReadableStream) {
-			process.stderr.write(chunk);
-		}
-	})();
+	currentProc.stderr.on("data", (chunk) => {
+		process.stderr.write(chunk);
+	});
 
-	const exitCode = await currentProc.exited;
-	console.log(`\nProcess exited with code ${exitCode}`);
-	currentProc = null;
+	currentProc.on("close", (code) => {
+		console.log(`\nProcess exited with code ${code}`);
+		currentProc = null;
+	});
 }
 
-// @ts-ignore fs types suck
-watch(filename, async (watcher) => {
-	for await (const _ of watcher) {
-		if (timeout) clearTimeout(timeout);
-		timeout = setTimeout(() => runScript(), 100);
-	}
+watch(filename, () => {
+	if (timeout) clearTimeout(timeout);
+	timeout = setTimeout(() => runScript(), 100);
 });
 
-await runScript();
+runScript();
 console.log(`Watching ${filename} for changes...`);

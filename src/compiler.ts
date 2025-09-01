@@ -1,3 +1,4 @@
+import { writeFile } from "fs/promises";
 import {
 	ArrowFunction,
 	BinaryExpression,
@@ -884,5 +885,5 @@ export async function compileProject(project: Project) {
 }\n\n${outputs.join("\n")}`;
 
 	console.timeEnd("compilation");
-	await Bun.write("out.nut", output);
+	await writeFile("out.nut", output);
 }

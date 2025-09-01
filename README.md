@@ -1,24 +1,10 @@
 # tsquirrel
 
-> [!IMPORTANT]
-> This project only supports the **Bun** runtime currently. :shipit:
-
 This project transpiles TypeScript projects into [VScript](https://developer.valvesoftware.com/wiki/VScript) / [Squirrel](http://squirrel-lang.org/), mainly made for Valve's [Left 4 Dead 2](https://store.steampowered.com/app/550/Left_4_Dead_2/).
 
 ## Installation
 
-To install dependencies:
-
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun watch
-```
-
+You can run the compiler by running the `watch` script from the package.json
 To run in a standard (non-valve) Squirrel environment, you may use:
 
 -   Please note: This requires you to compile Squirrel yourself,
@@ -28,8 +14,6 @@ To run in a standard (non-valve) Squirrel environment, you may use:
 ```bash
 bun watchtest
 ```
-
----
 
 > This project is not affiliated with Valve.<br>
 > All trademarks belong to their owners.

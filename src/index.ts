@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 import { Cli, Command, Option } from "clipanion";
 import { watch } from "fs";
 import { Project } from "ts-morph";
@@ -55,10 +54,17 @@ class CompileCommand extends Command {
 	}
 
 	private watchFile(filePath: string) {
+		let timeout: NodeJS.Timeout | null = null;
+
 		watch(filePath, async (eventType) => {
 			if (eventType === "change") {
 				log.debug(`Detected change in ${filePath}`);
-				await this.compileAndCheck();
+
+				if (timeout) clearTimeout(timeout);
+
+				timeout = setTimeout(async () => {
+					await this.compileAndCheck();
+				}, 50);
 			}
 		});
 	}

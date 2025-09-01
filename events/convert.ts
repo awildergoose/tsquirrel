@@ -72,10 +72,13 @@ function parseBlock(lexer: ValveLexer): ValveBlock {
 	return obj;
 }
 
+import { existsSync } from "fs";
+import { readFile, writeFile } from "fs/promises";
+
 async function parseValveFile(filePath: string): Promise<ValveBlock> {
-	if (!(await Bun.file(filePath).exists()))
+	if (!existsSync(filePath))
 		throw new Error(`file ${filePath} doesn't exist!`);
-	const text = await Bun.file(filePath).text();
+	const text = await readFile(filePath, "utf-8");
 	const lexer = new ValveLexer(text);
 	const result: ValveBlock = {};
 
@@ -96,13 +99,14 @@ async function main() {
 	const file = process.argv[2];
 	if (file === undefined)
 		return console.error(
-			"usage: bun convert.ts <filename> (without file extension)"
+			"usage: convert <filename> (without file extension)"
 		);
 	const inputFile = `${file}.res`;
 	const outputFile = `${file}.json`;
 
 	const data = await parseValveFile(inputFile);
-	await Bun.file(outputFile).write(
+	await writeFile(
+		outputFile,
 		JSON.stringify(Object.values(data)[0], null, 4)
 	);
 }
