@@ -4,8 +4,7 @@ export function deepPrintTable(debugTable: any, prefix = "") {
 		prefix = "   ";
 	}
 
-	//@ts-ignore TS1091
-	for (let idx, val in debugTable) {
+	for (let [idx, val] of debugTable) {
 		if (typeOf(val) === "table") {
 			print(`${prefix}${idx} = \n${prefix}{\n`);
 			deepPrintTable(val, `${prefix}   `);

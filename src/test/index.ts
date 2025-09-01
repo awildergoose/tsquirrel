@@ -143,8 +143,6 @@ hookGameEvent("weapon_fire", (params) => {
 	// pushPlayer(player, player.EyeAngles().Forward(), 2000);
 
 	new Promise<number>((resolve, reject) => {
-		// randRange here is undefined,
-		// Could this be because it doesn't use `::randRange` in the compiled code?
 		if (randRange(100) >= 50) resolve(randRange(100));
 		else reject("Stupid!!");
 	})
@@ -159,3 +157,19 @@ hookGameEvent("weapon_fire", (params) => {
 		player.TakeDamage(10, 1, player);
 	});
 });
+
+function* idk() {
+	for (let n = 1; true; n *= 2) yield n;
+}
+
+let x = 100;
+
+for (let [i, pow] of idk() as [number, number][]) {
+	if (pow >= x) {
+		x = pow;
+		printl(format("X: %d", x));
+		break;
+	}
+}
+
+printl(format("X: %d", x));

@@ -461,6 +461,15 @@ function handleExpressionStatement(node: ExpressionStatement) {
 					.asKindOrThrow(ts.SyntaxKind.DeleteExpression)
 					.getExpression()
 			)}\n`;
+
+		case ts.SyntaxKind.YieldExpression: {
+			const yieldExpr = expr.asKindOrThrow(ts.SyntaxKind.YieldExpression);
+			let rest = yieldExpr.getExpression()
+				? ` ${handleExpression(yieldExpr.getExpressionOrThrow())}`
+				: "";
+			return `yield${rest}\n`;
+		}
+
 		default:
 			const filePath = expr.getSourceFile().getFilePath();
 			const line = expr.getStartLineNumber();
@@ -650,12 +659,15 @@ function handleDoStatement(node: DoStatement) {
 function handleForInStatement(node: ForInStatement) {
 	const init = node.getInitializer();
 	let out = "";
-
-	out += `foreach (${init
+	let inits = init
 		.asKindOrThrow(ts.SyntaxKind.VariableDeclarationList)
 		.getDeclarations()
 		.map((node) => node.getName())
-		.join(", ")} in ${handleExpression(node.getExpression())})`;
+		.join(", ");
+	if (inits.startsWith("[")) inits = inits.slice(1);
+	if (inits.endsWith("]")) inits = inits.slice(0, -1);
+
+	out += `foreach (${inits} in ${handleExpression(node.getExpression())})`;
 	out += handleBlockOrStatement(node.getStatement());
 
 	return out;
