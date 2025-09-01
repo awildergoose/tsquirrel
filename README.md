@@ -9,7 +9,6 @@ You can run the transpiler by running the `watch` script from the package.json<b
 To test in a standard (non-Valve) Squirrel environment:<br />
 
 1. You'll need to compile Squirrel yourself from [here](https://github.com/albertodemichelis/squirrel/releases/tag/v3.2). (CMake worked for me, use whatever works best for you though)
-2. Run the `watchtest` script from the package.json<br /> <br />
+2. Run the `watchtest` script from the package.json<br />
 
-> This project is not affiliated with Valve.<br>
-> All trademarks belong to their owners.
+> This project is not affiliated with Valve. All trademarks belong to their owners.
