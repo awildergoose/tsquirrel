@@ -117,6 +117,9 @@ function handleVariableStatement(
 		setter = "=";
 	}
 
+	const isExported = node.hasModifier(ts.SyntaxKind.ExportKeyword);
+	if (isExported) keyword += `::`;
+
 	return (
 		handleVariableDeclarationList(
 			node.getDeclarationList(),

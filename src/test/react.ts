@@ -1,42 +1,8 @@
 /** @jsx h */
 /** @jsxFrag Fragment */
 
+import { String } from "./std/string";
 import { deepPrintTable } from "./std/table";
-
-function String(v: any): string {
-	const t = typeOf(v);
-
-	switch (t) {
-		case "null":
-			return "";
-		case "integer":
-		case "float":
-		case "bool":
-		case "string":
-			return `${v}`;
-		case "function":
-			try {
-				return String(v());
-			} catch (e) {
-				return "[function]";
-			}
-		case "array":
-			return v.map(String).join("");
-		case "table":
-			return "[table]";
-		case "instance":
-		case "class":
-			return "[object]";
-		case "generator":
-		case "thread":
-			return `[${t}]`;
-		case "userdata":
-		case "weakref":
-			return `[${t}]`;
-		default:
-			return "[unknown]";
-	}
-}
 
 export type Child =
 	| string
@@ -109,8 +75,7 @@ function normalizeDelims(s: string): string {
 	let out = "";
 	for (let i = 0; i < s.len(); i++) {
 		const ch = s[i];
-		if (ch === "|" || ch === "," || ch === " ") out += " ";
-		else out += ch;
+		out += ch === "|" || ch === "," || ch === " " ? " " : ch;
 	}
 	return out;
 }
@@ -133,19 +98,19 @@ function resolveFlags(f: any): number {
 		if (!t) continue;
 
 		if (t === "nobg" || t === "no-bg") {
-			out = out + HUD_FLAG_NOBG;
+			out += HUD_FLAG_NOBG;
 		} else if (t === "center" || t === "align-center") {
-			out = out + HUD_FLAG_ALIGN_CENTER;
+			out += HUD_FLAG_ALIGN_CENTER;
 		} else if (t === "left" || t === "align-left") {
-			out = out + HUD_FLAG_ALIGN_LEFT;
+			out += HUD_FLAG_ALIGN_LEFT;
 		} else if (t === "right" || t === "align-right") {
-			out = out + HUD_FLAG_ALIGN_RIGHT;
+			out += HUD_FLAG_ALIGN_RIGHT;
 		} else if (t === "blink") {
-			out = out + HUD_FLAG_BLINK;
+			out += HUD_FLAG_BLINK;
 		} else if (t === "beep") {
-			out = out + HUD_FLAG_BEEP;
+			out += HUD_FLAG_BEEP;
 		} else if (t === "countdown-warn") {
-			out = out + HUD_FLAG_COUNTDOWN_WARN;
+			out += HUD_FLAG_COUNTDOWN_WARN;
 		}
 	}
 
@@ -187,14 +152,12 @@ function walk(
 ): { fields: Record<string, any>; placements: Placement[] } {
 	if (!node) return { fields: fieldsOut, placements: placementsOut };
 
-	printl(node.type);
-
-	var newFields = fieldsOut;
-	var newPlacements = placementsOut;
+	let newFields = fieldsOut;
+	let newPlacements = placementsOut;
 
 	if (node.type === "Fragment" || node.type === "HUD") {
-		for (var i = 0; i < node.children.len(); i++) {
-			var c = node.children[i];
+		for (let i = 0; i < node.children.len(); i++) {
+			const c = node.children[i];
 			if (typeOf(c) === "table") {
 				var result = walk(c, inheritedSlot, newFields, newPlacements);
 				newFields = result.fields;
@@ -205,21 +168,20 @@ function walk(
 	}
 
 	if (node.type === "Text") {
-		var props = node.props || {};
-		var name = props.name ? String(props.name) : nextId("text");
-		var slot = resolveSlot("slot" in props ? props.slot : inheritedSlot);
-		var flags = resolveFlags(
+		const props = node.props || {};
+		const name = props.name ? String(props.name) : nextId("text");
+		const slot = resolveSlot("slot" in props ? props.slot : inheritedSlot);
+		const flags = resolveFlags(
 			"style" in props ? props.style : "flags" in props ? props.flags : ""
 		);
 
-		var updatedPlacements = newPlacements;
+		const updatedPlacements = newPlacements;
 		if (
 			props.x != null &&
 			props.y != null &&
 			props.w != null &&
 			props.h != null
 		) {
-			// append without mutating original
 			updatedPlacements.append({
 				slot: slot,
 				x: props.x,
@@ -229,11 +191,10 @@ function walk(
 			});
 		}
 
-		var getter = makeGetter(node.children);
+		const getter = makeGetter(node.children);
 
-		// append to fieldsOut immutably
-		var updatedFields = {};
-		for (let [k, v] of newFields as [any, any][]) updatedFields[k] = v; // shallow copy
+		const updatedFields = {};
+		for (let [k, v] of newFields as [any, any][]) updatedFields[k] = v;
 		updatedFields[name] = {
 			slot: slot,
 			datafunc: getter,
@@ -241,12 +202,11 @@ function walk(
 			name: name,
 		};
 
-		deepPrintTable(updatedFields);
 		return { fields: updatedFields, placements: updatedPlacements };
 	}
 
-	for (var j = 0; j < node.children.len(); j++) {
-		var c2 = node.children[j];
+	for (let j = 0; j < node.children.len(); j++) {
+		const c2 = node.children[j];
 		if (typeOf(c2) === "table") {
 			var result2 = walk(c2, inheritedSlot, newFields, newPlacements);
 			newFields = result2.fields;
@@ -267,7 +227,11 @@ function makeGetter(children: Child[]): () => string {
 					const v = (ch as any)();
 					out += v == null ? "" : String(v);
 				} catch (e) {
-					printl("[getter error] " + e);
+					printl(
+						"[getter error] " +
+							e +
+							" (make sure your variables are exported!)"
+					);
 				}
 			} else {
 				out += String(ch);

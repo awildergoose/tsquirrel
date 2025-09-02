@@ -192,8 +192,8 @@ import { createSignal, h, render } from "./react";
 // 	HUDSetLayout(layout);
 // }
 
-const [score, setScore] = createSignal(0);
-const [clock, setClock] = createSignal("");
+export const [score, setScore] = createSignal(0);
+export const [clock, setClock] = createSignal("");
 
 const ui = (
 	<HUD>
