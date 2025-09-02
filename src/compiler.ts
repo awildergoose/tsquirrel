@@ -1,5 +1,6 @@
 import { writeFile } from "fs/promises";
 import {
+	ArrayLiteralExpression,
 	ArrowFunction,
 	BinaryExpression,
 	CallExpression,
@@ -82,11 +83,23 @@ function handleVariableDeclarationList(
 ): string {
 	let out = "";
 
-	node.getDeclarations().forEach((declaration) => {
+	node.getDeclarations().forEach((declaration, i) => {
+		const nameNode = declaration.getNameNode();
 		const value = declaration.getInitializer();
-		const finalValue =
-			value !== undefined ? handleExpression(value) : "null";
-		out += `${keyword}${declaration.getName()} ${setter} ${finalValue}`;
+		const finalValue = value ? handleExpression(value) : "null";
+
+		if (nameNode.isKind(ts.SyntaxKind.ArrayBindingPattern)) {
+			const tmpVar = `__tmp${i}`;
+			out += `${keyword}${tmpVar} ${setter} ${finalValue}\n`;
+			nameNode.getElements().forEach((el, idx) => {
+				const elName = el
+					.asKindOrThrow(ts.SyntaxKind.BindingElement)
+					.getName();
+				out += `${keyword}${elName} ${setter} ${tmpVar}[${idx}]\n`;
+			});
+		} else {
+			out += `${keyword}${declaration.getName()} ${setter} ${finalValue}\n`;
+		}
 	});
 
 	return out;
@@ -179,7 +192,10 @@ function handleBlockOrStatement(node: Node, addBraces = true) {
 function handleArrowFunction(node: ArrowFunction) {
 	let out = "";
 	out += `function(${handleParameters(node.getParameters())})`;
-	out += handleBlockOrStatement(node.getBody());
+
+	out += node.getBody().isKind(ts.SyntaxKind.Block)
+		? handleBlockOrStatement(node.getBody())
+		: `{\nreturn ${handleExpression(node.getBody() as Expression)}\n}`;
 
 	return out;
 }
@@ -194,15 +210,17 @@ function handleJsxElement(jsx: JsxElement): string {
 			if (attr.isKind(ts.SyntaxKind.JsxAttribute)) {
 				const name = attr.getNameNode().getText();
 				const init = attr.getInitializer();
-				if (!init) return `${name}: true`;
+				if (!init) return `${name} = true`;
 
 				if (init.isKind(ts.SyntaxKind.StringLiteral)) {
-					return `${name}: ${JSON.stringify(init.getLiteralText())}`;
+					return `${name} = ${JSON.stringify(init.getLiteralText())}`;
 				}
 
 				if (init.isKind(ts.SyntaxKind.JsxExpression)) {
 					const expr = init.getExpression();
-					return `${name}: ${expr ? handleExpression(expr) : "true"}`;
+					return `${name} = ${
+						expr ? handleExpression(expr) : "true"
+					}`;
 				}
 			}
 			return "";
@@ -229,9 +247,9 @@ function handleJsxElement(jsx: JsxElement): string {
 		})
 		.filter(Boolean);
 
-	return `h("${tag}", { ${props.filter(Boolean).join(", ")} }${
-		children.length ? ", " + children.join(", ") : ""
-	})`;
+	return `h("${tag}", { ${props
+		.filter(Boolean)
+		.join(", ")} }, [${children.join(", ")}])`;
 }
 
 function handleJsxSelfClosing(node: JsxSelfClosingElement): string {
@@ -241,21 +259,21 @@ function handleJsxSelfClosing(node: JsxSelfClosingElement): string {
 		if (attr.isKind(ts.SyntaxKind.JsxAttribute)) {
 			const name = attr.getNameNode().getText();
 			const init = attr.getInitializer();
-			if (!init) return `${name}: true`;
+			if (!init) return `${name} = true`;
 
 			if (init.isKind(ts.SyntaxKind.StringLiteral)) {
-				return `${name}: ${JSON.stringify(init.getLiteralText())}`;
+				return `${name} = ${JSON.stringify(init.getLiteralText())}`;
 			}
 
 			if (init.isKind(ts.SyntaxKind.JsxExpression)) {
 				const expr = init.getExpression();
-				return `${name}: ${expr ? handleExpression(expr) : "true"}`;
+				return `${name} = ${expr ? handleExpression(expr) : "true"}`;
 			}
 		}
 		return "";
 	});
 
-	return `h("${tag}", { ${props.filter(Boolean).join(", ")} })`;
+	return `h("${tag}", { ${props.filter(Boolean).join(", ")} }, [])`;
 }
 
 function handleJsxFragment(frag: JsxFragment): string {
@@ -280,9 +298,7 @@ function handleJsxFragment(frag: JsxFragment): string {
 		})
 		.filter(Boolean);
 
-	return `h(Fragment, null${
-		children.length ? ", " + children.join(", ") : ""
-	})`;
+	return `h(Fragment, null, [${children.join(", ")}])`;
 }
 
 function handleExpression(node: Expression): string {
@@ -354,10 +370,13 @@ function handleExpression(node: Expression): string {
 					.asKindOrThrow(ts.SyntaxKind.NonNullExpression)
 					.getExpression()
 			);
+		case ts.SyntaxKind.ArrayLiteralExpression:
+			return handleArrayLiteralExpression(
+				node.asKindOrThrow(ts.SyntaxKind.ArrayLiteralExpression)
+			);
 		case ts.SyntaxKind.PrefixUnaryExpression:
 		case ts.SyntaxKind.PostfixUnaryExpression:
 		case ts.SyntaxKind.StringLiteral:
-		case ts.SyntaxKind.ArrayLiteralExpression: // TODO parse this properly
 		case ts.SyntaxKind.TrueKeyword:
 		case ts.SyntaxKind.FalseKeyword:
 		case ts.SyntaxKind.NullKeyword:
@@ -441,8 +460,24 @@ function handleBinaryExpression(node: BinaryExpression): string {
 	if (op === "=") return `${left} = ${right}`;
 	if (op === "===") op = "==";
 	if (op === "!==") op = "!=";
+	if (op === "??") {
+		const filePath = node.getSourceFile().getFilePath();
+		const line = node.getStartLineNumber();
+
+		log.traceWarn(
+			`The ?? operator is not supported in ${filePath}:${line}!`
+		);
+		op = "||";
+	}
 
 	return `${left} ${op} ${right}`;
+}
+
+function handleArrayLiteralExpression(node: ArrayLiteralExpression) {
+	return `[${node
+		.getElements()
+		.map((e) => handleExpression(e))
+		.join(", ")}]`;
 }
 
 function handleCallExpression(callExpr: CallExpression) {
@@ -747,8 +782,12 @@ function handleIfStatement(node: IfStatement) {
 	let out = "";
 
 	const expression = node.getExpression();
+	const thenStatement = node.getThenStatement();
 	out += `if (${handleExpression(expression)})`;
-	out += handleBlockOrStatement(node.getThenStatement());
+	out += handleBlockOrStatement(thenStatement);
+	if (!thenStatement.isKind(ts.SyntaxKind.Block)) {
+		out += "\n";
+	}
 
 	const elseStatement = node.getElseStatement();
 	if (elseStatement !== undefined) {

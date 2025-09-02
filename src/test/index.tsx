@@ -10,6 +10,8 @@
 // 	},
 // };
 
+import { createSignal, h, render } from "./react";
+
 // myTable.a = 2;
 // myTable["a"] = 2;
 
@@ -171,7 +173,24 @@
 
 /** @jsx h */
 /** @jsxFrag Fragment */
-import { createSignal, h, render } from "./react";
+
+// function InitHUD() {
+// 	const layout = {
+// 		Fields: {
+// 			hello: {
+// 				slot: HUD_MID_BOX, // middle slot constant
+// 				dataval: "Hello World!",
+// 				flags: HUD_FLAG_NOBG | HUD_FLAG_ALIGN_CENTER,
+// 				x: 0.4,
+// 				y: 0.45,
+// 				w: 0.2,
+// 				h: 0.1,
+// 			},
+// 		},
+// 	};
+
+// 	HUDSetLayout(layout);
+// }
 
 const [score, setScore] = createSignal(0);
 const [clock, setClock] = createSignal("");
@@ -180,7 +199,7 @@ const ui = (
 	<HUD>
 		<Text
 			name="scoreLine"
-			slot={"middle-top"}
+			slot={"middle_top"}
 			x={0.3}
 			y={0.05}
 			w={0.4}
@@ -208,9 +227,9 @@ function InitHUD() {
 	render(ui);
 }
 
-function OnGameEvent_weapon_fire(params: any) {
+hookGameEvent("weapon_fire", (params) => {
 	setScore(score() + 1);
 	setClock("weapon_fire");
-}
+});
 
 InitHUD();

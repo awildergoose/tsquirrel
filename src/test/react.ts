@@ -1,6 +1,8 @@
 /** @jsx h */
 /** @jsxFrag Fragment */
 
+import { deepPrintTable } from "./std/table";
+
 function String(v: any): string {
 	const t = typeOf(v);
 
@@ -102,28 +104,29 @@ declare const HUD_FLAG_COUNTDOWN_WARN: number;
 
 function resolveSlot(sAsAny: any): number {
 	if (sAsAny == null) return HUD_MID_TOP;
-	if (typeof sAsAny === "number") return sAsAny;
+	if (typeOf(sAsAny) === "integer" || typeOf(sAsAny) === "float")
+		return sAsAny;
 	const key = String(sAsAny).tolower();
 	const map: Record<string, number> = {
-		"middle-top": HUD_MID_TOP,
-		"mid-top": HUD_MID_TOP,
-		"middle-bottom": HUD_MID_BOT,
-		"mid-bottom": HUD_MID_BOT,
-		"left-top": HUD_LEFT_TOP,
-		"left-bottom": HUD_LEFT_BOT,
-		"right-top": HUD_RIGHT_TOP,
-		"right-bottom": HUD_RIGHT_BOT,
+		middle_top: HUD_MID_TOP,
+		mid_top: HUD_MID_TOP,
+		middle_bottom: HUD_MID_BOT,
+		mid_bottom: HUD_MID_BOT,
+		left_top: HUD_LEFT_TOP,
+		left_bottom: HUD_LEFT_BOT,
+		right_top: HUD_RIGHT_TOP,
+		right_bottom: HUD_RIGHT_BOT,
 		ticker: HUD_TICKER,
-		"mid-box": HUD_MID_BOX,
-		"far-left": HUD_FAR_LEFT,
-		"far-right": HUD_FAR_RIGHT,
-		"score-title": HUD_SCORE_TITLE,
-		"score-1": HUD_SCORE_1,
-		"score-2": HUD_SCORE_2,
-		"score-3": HUD_SCORE_3,
-		"score-4": HUD_SCORE_4,
+		mid_box: HUD_MID_BOX,
+		far_left: HUD_FAR_LEFT,
+		far_right: HUD_FAR_RIGHT,
+		score_title: HUD_SCORE_TITLE,
+		score_1: HUD_SCORE_1,
+		score_2: HUD_SCORE_2,
+		score_3: HUD_SCORE_3,
+		score_4: HUD_SCORE_4,
 	};
-	return map[key] ?? HUD_MID_TOP;
+	return map[key] || HUD_MID_TOP;
 }
 
 function normalizeDelims(s: string): string {
@@ -143,24 +146,37 @@ function splitTokens(f: any): string[] {
 }
 
 function resolveFlags(f: any): number {
-	if (f == null) return HUD_FLAG_NOBG | HUD_FLAG_ALIGN_CENTER;
-	if (typeof f === "number") return f;
-	const tokens = typeOf(f) === "array" ? f : splitTokens(String(f));
+	if (f == null) return HUD_FLAG_NOBG + HUD_FLAG_ALIGN_CENTER;
+	if (typeOf(f) === "integer") return f;
+
+	const tokens = splitTokens(String(f));
 	let out = 0;
+
 	for (const tRaw of tokens) {
 		const t = String(tRaw).tolower();
 		if (!t) continue;
-		if (t === "nobg" || t === "no-bg") out |= HUD_FLAG_NOBG;
-		else if (t === "align-center" || t === "center")
-			out |= HUD_FLAG_ALIGN_CENTER;
-		else if (t === "align-left" || t === "left") out |= HUD_FLAG_ALIGN_LEFT;
-		else if (t === "align-right" || t === "right")
-			out |= HUD_FLAG_ALIGN_RIGHT;
-		else if (t === "blink") out |= HUD_FLAG_BLINK;
-		else if (t === "beep") out |= HUD_FLAG_BEEP;
-		else if (t === "countdown-warn") out |= HUD_FLAG_COUNTDOWN_WARN;
+
+		if (t === "nobg" || t === "no-bg") {
+			out = out + HUD_FLAG_NOBG;
+		} else if (t === "center" || t === "align-center") {
+			out = out + HUD_FLAG_ALIGN_CENTER;
+		} else if (t === "left" || t === "align-left") {
+			out = out + HUD_FLAG_ALIGN_LEFT;
+		} else if (t === "right" || t === "align-right") {
+			out = out + HUD_FLAG_ALIGN_RIGHT;
+		} else if (t === "blink") {
+			out = out + HUD_FLAG_BLINK;
+		} else if (t === "beep") {
+			out = out + HUD_FLAG_BEEP;
+		} else if (t === "countdown-warn") {
+			out = out + HUD_FLAG_COUNTDOWN_WARN;
+		}
 	}
-	return out || HUD_FLAG_NOBG | HUD_FLAG_ALIGN_CENTER;
+
+	if (out === 0) {
+		return HUD_FLAG_NOBG + HUD_FLAG_ALIGN_CENTER;
+	}
+	return out;
 }
 
 let _autoId = 0;
@@ -172,17 +188,17 @@ function nextId(prefix = "text") {
 type Placement = { slot: number; x: number; y: number; w: number; h: number };
 
 export function render(root: VNode) {
-	const fields: Record<string, any> = {};
+	let fields: Record<string, any> = {};
 	const placements: Placement[] = [];
 
-	walk(root, null, fields, placements);
+	fields = walk(root, null, fields, placements);
 
 	const hudTable = { Fields: fields };
-	HUDSetLayout(hudTable);
-
 	for (const p of placements) {
 		HUDPlace(p.slot, p.x, p.y, p.w, p.h);
 	}
+	HUDSetLayout(hudTable);
+	deepPrintTable(hudTable);
 }
 
 function walk(
@@ -190,25 +206,27 @@ function walk(
 	inheritedSlot: number | null,
 	fieldsOut: Record<string, any>,
 	placementsOut: Placement[]
-) {
-	if (!node) return;
-	if (node.type === "Fragment") {
-		for (const c of node.children)
-			if (typeof c === "object")
-				walk(c, inheritedSlot, fieldsOut, placementsOut);
-		return;
+): Record<string, any> {
+	if (!node) return fieldsOut;
+
+	printl(node.type);
+
+	if (node.type === "Fragment" || node.type === "HUD") {
+		for (const c of node.children) {
+			if (typeOf(c) === "table") {
+				fieldsOut = walk(c, inheritedSlot, fieldsOut, placementsOut);
+			}
+		}
+		return fieldsOut;
 	}
-	if (node.type === "HUD") {
-		for (const c of node.children)
-			if (typeof c === "object")
-				walk(c, inheritedSlot, fieldsOut, placementsOut);
-		return;
-	}
+
 	if (node.type === "Text") {
 		const props = node.props || {};
 		const name = props.name ? String(props.name) : nextId("text");
-		const slot = resolveSlot(props.slot ?? inheritedSlot);
-		const flags = resolveFlags(props.style ?? props.flags);
+		const slot = resolveSlot("slot" in props ? props.slot : inheritedSlot);
+		const flags = resolveFlags(
+			"style" in props ? props.style : props.flags
+		);
 
 		if (
 			props.x != null &&
@@ -218,10 +236,10 @@ function walk(
 		) {
 			placementsOut.push({
 				slot: slot,
-				x: +props.x,
-				y: +props.y,
-				w: +props.w,
-				h: +props.h,
+				x: props.x,
+				y: props.y,
+				w: props.w,
+				h: props.h,
 			});
 		}
 
@@ -232,13 +250,15 @@ function walk(
 			flags: flags,
 			name: name,
 		};
-		return;
+		return fieldsOut;
 	}
 
 	for (const c of node.children) {
-		if (typeof c === "object")
-			walk(c, inheritedSlot, fieldsOut, placementsOut);
+		if (typeOf(c) === "table") {
+			fieldsOut = walk(c, inheritedSlot, fieldsOut, placementsOut);
+		}
 	}
+	return fieldsOut;
 }
 
 function makeGetter(children: Child[]): () => string {
@@ -246,9 +266,13 @@ function makeGetter(children: Child[]): () => string {
 		let out = "";
 		for (const ch of children) {
 			if (ch == null || ch === true || ch === false) continue;
-			if (typeof ch === "function") {
-				const v = (ch as any)();
-				out += v == null ? "" : String(v);
+			if (typeOf(ch) === "function") {
+				try {
+					const v = (ch as any)();
+					out += v == null ? "" : String(v);
+				} catch (e) {
+					printl("[getter error] " + e);
+				}
 			} else {
 				out += String(ch);
 			}
