@@ -231,6 +231,29 @@ declare global {
 	 * @param obj
 	 */
 	function typeOf(obj: any): SquirrelType;
+
+	const HUD_MID_TOP: number;
+	const HUD_MID_BOT: number;
+	const HUD_LEFT_TOP: number;
+	const HUD_LEFT_BOT: number;
+	const HUD_RIGHT_TOP: number;
+	const HUD_RIGHT_BOT: number;
+	const HUD_TICKER: number;
+	const HUD_MID_BOX: number;
+	const HUD_FAR_LEFT: number;
+	const HUD_FAR_RIGHT: number;
+	const HUD_SCORE_TITLE: number;
+	const HUD_SCORE_1: number;
+	const HUD_SCORE_2: number;
+	const HUD_SCORE_3: number;
+	const HUD_SCORE_4: number;
+	const HUD_FLAG_NOBG: number;
+	const HUD_FLAG_ALIGN_LEFT: number;
+	const HUD_FLAG_ALIGN_CENTER: number;
+	const HUD_FLAG_ALIGN_RIGHT: number;
+	const HUD_FLAG_BLINK: number;
+	const HUD_FLAG_BEEP: number;
+	const HUD_FLAG_COUNTDOWN_WARN: number;
 }
 
 export {};

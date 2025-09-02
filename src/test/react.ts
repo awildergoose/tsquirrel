@@ -78,30 +78,6 @@ export function createSignal<T>(initial: T): [() => T, (v: T) => void] {
 	];
 }
 
-declare const HUD_MID_TOP: number;
-declare const HUD_MID_BOT: number;
-declare const HUD_LEFT_TOP: number;
-declare const HUD_LEFT_BOT: number;
-declare const HUD_RIGHT_TOP: number;
-declare const HUD_RIGHT_BOT: number;
-declare const HUD_TICKER: number;
-declare const HUD_MID_BOX: number;
-declare const HUD_FAR_LEFT: number;
-declare const HUD_FAR_RIGHT: number;
-declare const HUD_SCORE_TITLE: number;
-declare const HUD_SCORE_1: number;
-declare const HUD_SCORE_2: number;
-declare const HUD_SCORE_3: number;
-declare const HUD_SCORE_4: number;
-
-declare const HUD_FLAG_NOBG: number;
-declare const HUD_FLAG_ALIGN_LEFT: number;
-declare const HUD_FLAG_ALIGN_CENTER: number;
-declare const HUD_FLAG_ALIGN_RIGHT: number;
-declare const HUD_FLAG_BLINK: number;
-declare const HUD_FLAG_BEEP: number;
-declare const HUD_FLAG_COUNTDOWN_WARN: number;
-
 function resolveSlot(sAsAny: any): number {
 	if (sAsAny == null) return HUD_MID_TOP;
 	if (typeOf(sAsAny) === "integer" || typeOf(sAsAny) === "float")
@@ -188,16 +164,18 @@ function nextId(prefix = "text") {
 type Placement = { slot: number; x: number; y: number; w: number; h: number };
 
 export function render(root: VNode) {
-	let fields: Record<string, any> = {};
-	const placements: Placement[] = [];
+	const result = walk(root, null, {}, []);
+	const fieldsOut = result.fields;
+	const placementsOut = result.placements;
 
-	fields = walk(root, null, fields, placements);
+	const hudTable = { Fields: fieldsOut };
+	HUDSetLayout(hudTable);
 
-	const hudTable = { Fields: fields };
-	for (const p of placements) {
+	for (let i = 0; i < placementsOut.len(); i++) {
+		const p = placementsOut[i];
 		HUDPlace(p.slot, p.x, p.y, p.w, p.h);
 	}
-	HUDSetLayout(hudTable);
+
 	deepPrintTable(hudTable);
 }
 
@@ -206,35 +184,43 @@ function walk(
 	inheritedSlot: number | null,
 	fieldsOut: Record<string, any>,
 	placementsOut: Placement[]
-): Record<string, any> {
-	if (!node) return fieldsOut;
+): { fields: Record<string, any>; placements: Placement[] } {
+	if (!node) return { fields: fieldsOut, placements: placementsOut };
 
 	printl(node.type);
 
+	var newFields = fieldsOut;
+	var newPlacements = placementsOut;
+
 	if (node.type === "Fragment" || node.type === "HUD") {
-		for (const c of node.children) {
+		for (var i = 0; i < node.children.len(); i++) {
+			var c = node.children[i];
 			if (typeOf(c) === "table") {
-				fieldsOut = walk(c, inheritedSlot, fieldsOut, placementsOut);
+				var result = walk(c, inheritedSlot, newFields, newPlacements);
+				newFields = result.fields;
+				newPlacements = result.placements;
 			}
 		}
-		return fieldsOut;
+		return { fields: newFields, placements: newPlacements };
 	}
 
 	if (node.type === "Text") {
-		const props = node.props || {};
-		const name = props.name ? String(props.name) : nextId("text");
-		const slot = resolveSlot("slot" in props ? props.slot : inheritedSlot);
-		const flags = resolveFlags(
-			"style" in props ? props.style : props.flags
+		var props = node.props || {};
+		var name = props.name ? String(props.name) : nextId("text");
+		var slot = resolveSlot("slot" in props ? props.slot : inheritedSlot);
+		var flags = resolveFlags(
+			"style" in props ? props.style : "flags" in props ? props.flags : ""
 		);
 
+		var updatedPlacements = newPlacements;
 		if (
 			props.x != null &&
 			props.y != null &&
 			props.w != null &&
 			props.h != null
 		) {
-			placementsOut.push({
+			// append without mutating original
+			updatedPlacements.append({
 				slot: slot,
 				x: props.x,
 				y: props.y,
@@ -243,22 +229,32 @@ function walk(
 			});
 		}
 
-		const getter = makeGetter(node.children);
-		fieldsOut[name] = {
+		var getter = makeGetter(node.children);
+
+		// append to fieldsOut immutably
+		var updatedFields = {};
+		for (let [k, v] of newFields as [any, any][]) updatedFields[k] = v; // shallow copy
+		updatedFields[name] = {
 			slot: slot,
 			datafunc: getter,
 			flags: flags,
 			name: name,
 		};
-		return fieldsOut;
+
+		deepPrintTable(updatedFields);
+		return { fields: updatedFields, placements: updatedPlacements };
 	}
 
-	for (const c of node.children) {
-		if (typeOf(c) === "table") {
-			fieldsOut = walk(c, inheritedSlot, fieldsOut, placementsOut);
+	for (var j = 0; j < node.children.len(); j++) {
+		var c2 = node.children[j];
+		if (typeOf(c2) === "table") {
+			var result2 = walk(c2, inheritedSlot, newFields, newPlacements);
+			newFields = result2.fields;
+			newPlacements = result2.placements;
 		}
 	}
-	return fieldsOut;
+
+	return { fields: newFields, placements: newPlacements };
 }
 
 function makeGetter(children: Child[]): () => string {

@@ -452,12 +452,11 @@ function handleBinaryExpression(node: BinaryExpression): string {
 
 	let op = node.getOperatorToken().getText();
 
-	if (op === "=" && ts.isIdentifier(node.getLeft().compilerNode)) {
+	if (op === "=" && node.getLeft().isKind(ts.SyntaxKind.Identifier)) {
 		const isGlobal = left.startsWith("::");
 		return assignSlot(left, right, isGlobal);
 	}
 
-	if (op === "=") return `${left} = ${right}`;
 	if (op === "===") op = "==";
 	if (op === "!==") op = "!=";
 	if (op === "??") {
@@ -468,6 +467,11 @@ function handleBinaryExpression(node: BinaryExpression): string {
 			`The ?? operator is not supported in ${filePath}:${line}!`
 		);
 		op = "||";
+	}
+	if (op === "=") {
+		if (node.getLeft().isKind(ts.SyntaxKind.ElementAccessExpression)) {
+			op = "<-";
+		}
 	}
 
 	return `${left} ${op} ${right}`;

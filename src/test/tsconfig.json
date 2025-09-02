@@ -14,6 +14,7 @@
     "include": [
         "./**/*.ts",
         "./**/*.tsx",
+        "./**/*.d.ts",
         "../types/globals.d.ts",
         "../types/math.d.ts",
         "../types/regexp.d.ts",
