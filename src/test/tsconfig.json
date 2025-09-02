@@ -14,7 +14,7 @@
     "include": [
         "./**/*.ts",
         "./**/*.tsx",
-        "./**/*.d.ts",
+        "react.d-jsx.ts",
         "../types/globals.d.ts",
         "../types/math.d.ts",
         "../types/regexp.d.ts",

@@ -196,8 +196,8 @@ export const [score, setScore] = createSignal(0);
 export const [clock, setClock] = createSignal("");
 
 const ui = (
-	<HUD>
-		<Text
+	<hud>
+		<text
 			name="scoreLine"
 			slot={"middle_top"}
 			x={0.3}
@@ -207,9 +207,9 @@ const ui = (
 		>
 			{"Score: "}
 			{() => score()}
-		</Text>
+		</text>
 
-		<Text
+		<text
 			name="ticker"
 			slot={"ticker"}
 			x={0.25}
@@ -219,8 +219,8 @@ const ui = (
 			style={"align-center|nobg"}
 		>
 			{() => "[Event] " + clock()}
-		</Text>
-	</HUD>
+		</text>
+	</hud>
 );
 
 function InitHUD() {

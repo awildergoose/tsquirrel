@@ -155,7 +155,7 @@ function walk(
 	let newFields = fieldsOut;
 	let newPlacements = placementsOut;
 
-	if (node.type === "Fragment" || node.type === "HUD") {
+	if (node.type === "Fragment" || node.type === "hud") {
 		for (let i = 0; i < node.children.len(); i++) {
 			const c = node.children[i];
 			if (typeOf(c) === "table") {
@@ -165,9 +165,7 @@ function walk(
 			}
 		}
 		return { fields: newFields, placements: newPlacements };
-	}
-
-	if (node.type === "Text") {
+	} else if (node.type === "text") {
 		const props = node.props || {};
 		const name = props.name ? String(props.name) : nextId("text");
 		const slot = resolveSlot("slot" in props ? props.slot : inheritedSlot);
@@ -193,7 +191,7 @@ function walk(
 
 		const getter = makeGetter(node.children);
 
-		const updatedFields = {};
+		const updatedFields: Record<string, any> = {};
 		for (let [k, v] of newFields as [any, any][]) updatedFields[k] = v;
 		updatedFields[name] = {
 			slot: slot,
