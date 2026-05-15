@@ -15,6 +15,8 @@ import {
 	ForStatement,
 	FunctionDeclaration,
 	IfStatement,
+	JSDoc,
+	JSDocableNode,
 	JsxElement,
 	JsxFragment,
 	JsxSelfClosingElement,
@@ -31,6 +33,7 @@ import {
 	VariableDeclarationList,
 	VariableStatement,
 	WhileStatement,
+	Identifier,
 } from "ts-morph";
 import log from "./logger";
 
@@ -74,6 +77,13 @@ function assignSlot(name: string, rhs: string, isGlobal = false): string {
 	} else {
 		return `${isGlobal ? "::" : ""}${name} = ${rhs}`;
 	}
+}
+
+let globalIdentifierHandler = handleIdentifier;
+
+function handleIdentifier(node: Identifier): string {
+	if (node.getText() === "undefined") return "null";
+	return node.getText();
 }
 
 function handleVariableDeclarationList(
@@ -323,8 +333,9 @@ function handleExpression(node: Expression): string {
 				node.asKindOrThrow(ts.SyntaxKind.ArrowFunction),
 			);
 		case ts.SyntaxKind.Identifier:
-			if (node.getText() === "undefined") return "null";
-			return node.getText();
+			return globalIdentifierHandler(
+				node.asKindOrThrow(ts.SyntaxKind.Identifier),
+			);
 		case ts.SyntaxKind.ObjectLiteralExpression:
 			return handleObjectLiteralExpression(
 				node.asKindOrThrow(ts.SyntaxKind.ObjectLiteralExpression),
@@ -998,7 +1009,7 @@ function compileNode(node: Node, inFunction = false): string {
 		case ts.SyntaxKind.ContinueStatement:
 		case ts.SyntaxKind.BreakStatement:
 		case ts.SyntaxKind.Identifier:
-			return `${node.getText()}\n`;
+			return `${globalIdentifierHandler(node.asKindOrThrow(ts.SyntaxKind.Identifier))}\n`;
 
 		case ts.SyntaxKind.EndOfFileToken:
 			return "\n";
@@ -1012,69 +1023,213 @@ function compileNode(node: Node, inFunction = false): string {
 	}
 }
 
-function doOptimizationPass(file: SourceFile): boolean {
-	const REMOVE_UNUSED_EXPORTS = true;
+interface Optimizations {
+	functionDependencies: Record<string, Set<String>>;
+	usedFunctions: Array<String>;
+	usedClasses: Array<String>;
+	usedGlobalVariables: Array<String>;
+}
 
-	let unusedFunctions: Array<String> = [];
-	let unusedClasses: Array<String> = [];
+// This optimizes out unused functions, classes, and global variables
+// It likely misses a lot of cases where there are stuff that *are*
+// used but get omitted, for this reason, to disable
+// optimizations for a declaration, add a JSDoc comment like:
+// ```
+// /**
+// * @tsquirrel_no_optimize
+// */
+// ```
+function doOptimizationPass(
+	file: SourceFile,
+	optimizations_: Optimizations,
+): Optimizations {
+	// const REMOVE_UNUSED_EXPORTS = true;
+	let optimizations = optimizations_;
+
+	// const canOptimize = (node: any) => {
+	// 	return (
+	// 		node.getJsDocs().find((d: JSDoc) => {
+	// 			return d.getText().includes("* @tsquirrel_no_optimize");
+	// 		}) == undefined
+	// 	);
+	// };
+
+	globalIdentifierHandler = (node) => {
+		const out = handleIdentifier(node);
+		// let isCallingSelf = false;
+		let shouldMarkUsed = true;
+
+		{
+			// don't mark this as used if
+			// if we're the name of a function declaration
+			// or if we're the name of an import
+			if (
+				(node.getParent()?.getKind() ==
+					ts.SyntaxKind.FunctionDeclaration &&
+					node
+						.getParent()
+						?.asKindOrThrow(ts.SyntaxKind.FunctionDeclaration)
+						.getName() == out) ||
+				node.getParent()?.getKind() == ts.SyntaxKind.ImportSpecifier
+			) {
+				shouldMarkUsed = false;
+			} else {
+				let branch: Node | undefined = node;
+
+				while (
+					branch &&
+					!branch.isKind(ts.SyntaxKind.FunctionDeclaration)
+				) {
+					branch = branch.getParent();
+				}
+
+				if (out === "getPlayerRight") {
+					console.log("getPlayerRight used:");
+					console.log(!(branch && branch.getNameOrThrow() == out));
+					console.log(branch.print());
+				}
+
+				if (branch && branch.getNameOrThrow() == out) {
+					shouldMarkUsed = false;
+					optimizations.usedFunctions =
+						optimizations.usedFunctions.filter((s) => s != out);
+
+					optimizations.functionDependencies[out]?.forEach((v) => {
+						optimizations.usedFunctions =
+							optimizations.usedFunctions.filter((s) => s != v);
+					});
+				} else if (branch) {
+					const n = branch.getNameOrThrow();
+
+					if (optimizations.functionDependencies[n] !== undefined) {
+						optimizations.functionDependencies[n].add(out);
+					} else {
+						optimizations.functionDependencies[n] = new Set(out);
+					}
+				}
+			}
+
+			// if (branchNode) {
+			// 	if (out == "getPlayerRight") {
+			// 		console.log("is getPlayerRight used?");
+			// 		console.log(branchNode.getNameOrThrow() == out);
+			// 		console.log(branchNode.print());
+			// 	}
+			// 	// shouldMarkUsed = branchNode.getNameOrThrow() == out;
+			// 	if (!shouldMarkUsed) {
+			// 	}
+			// }
+		}
+
+		// if this is in the unused functions list AND
+		// it's not calling itself
+		// then mark it as used
+		if (!optimizations.usedFunctions.includes(out) && shouldMarkUsed) {
+			// optimizations.functions = optimizations.functions.filter(
+			// 	(s) => s != out,
+			// );
+			optimizations.usedFunctions.push(out);
+			if (out == "getPlayerRight") {
+				console.log(`marking used ${out}`);
+				console.log(node.getParent().print());
+			}
+			// console.log(`${out} is used`);
+		}
+
+		return out;
+	};
+
+	// Top-level/global optimizations
+	// file.forEachChild((node) => {
+	// 	switch (node.getKind()) {
+	// 		case ts.SyntaxKind.VariableDeclaration:
+	// 			const vr = node.asKindOrThrow(
+	// 				ts.SyntaxKind.VariableDeclaration,
+	// 			);
+	// 			if (
+	// 				(!vr.isExported() || REMOVE_UNUSED_EXPORTS) &&
+	// 				canOptimize(node)
+	// 			)
+	// 				optimizations.usedGlobalVariables.push(vr.getName());
+
+	// 			break;
+	// 		default:
+	// 			break;
+	// 	}
+	// });
+
+	// file.forEachDescendant((node) => {
+	// 	switch (node.getKind()) {
+	// Adding to unused lists
+	// case ts.SyntaxKind.ClassDeclaration:
+	// 	const cls = node.asKindOrThrow(ts.SyntaxKind.ClassDeclaration);
+	// 	if (
+	// 		(!cls.isExported() || REMOVE_UNUSED_EXPORTS) &&
+	// 		canOptimize(node)
+	// 	)
+	// 		optimizations.usedClasses.push(cls.getNameOrThrow());
+
+	// 	break;
+	// case ts.SyntaxKind.FunctionDeclaration:
+	// 	const fn = node.asKindOrThrow(
+	// 		ts.SyntaxKind.FunctionDeclaration,
+	// 	);
+	// 	if (
+	// 		(!fn.isExported() || REMOVE_UNUSED_EXPORTS) &&
+	// 		canOptimize(node)
+	// 	) {
+	// 		optimizations.functions.push(fn.getNameOrThrow());
+	// 		if (fn.getName().includes("createSignal"))
+	// 			console.log(`pushing ${fn.getName()} for unused`);
+	// 	}
+
+	// 	break;
+
+	// Usage cases
+	// case ts.SyntaxKind.NewExpression:
+	// 	const newExpr = node.asKindOrThrow(ts.SyntaxKind.NewExpression);
+	// 	const newing = handleExpression(newExpr.getExpression());
+
+	// 	if (unusedClasses.includes(newing)) {
+	// 		unusedClasses = unusedClasses.filter((s) => s != newing);
+	// 	}
+
+	// 	break;
+	// 		default:
+	// 			break;
+	// 	}
+	// });
+
+	file.forEachDescendant((node) => {
+		if (node.isKind(ts.SyntaxKind.Identifier)) {
+			globalIdentifierHandler(
+				node.asKindOrThrow(ts.SyntaxKind.Identifier),
+			);
+		}
+	});
+
+	globalIdentifierHandler = handleIdentifier;
+
+	return optimizations;
+}
+
+async function doOptimizationEmitPass(
+	file: SourceFile,
+	optimizations: Optimizations,
+): Promise<boolean> {
 	let changed = false;
 
 	const markChanged = () => {
 		changed = true;
 	};
 
-	file.forEachDescendant((node) => {
+	file.forEachChild((node) => {
 		switch (node.getKind()) {
-			case ts.SyntaxKind.ClassDeclaration:
-				const cls = node.asKindOrThrow(ts.SyntaxKind.ClassDeclaration);
-				if (!cls.isExported() || REMOVE_UNUSED_EXPORTS)
-					unusedClasses.push(cls.getNameOrThrow());
-
-				break;
-			case ts.SyntaxKind.FunctionDeclaration:
-				const fn = node.asKindOrThrow(
-					ts.SyntaxKind.FunctionDeclaration,
+			case ts.SyntaxKind.VariableDeclaration:
+				const vr = node.asKindOrThrow(
+					ts.SyntaxKind.VariableDeclaration,
 				);
-				if (!fn.isExported() || REMOVE_UNUSED_EXPORTS)
-					unusedFunctions.push(fn.getNameOrThrow());
-
-				break;
-			case ts.SyntaxKind.NewExpression:
-				const newExpr = node.asKindOrThrow(ts.SyntaxKind.NewExpression);
-				const newing = handleExpression(newExpr.getExpression());
-
-				if (unusedClasses.includes(newing)) {
-					unusedClasses = unusedClasses.filter((s) => s != newing);
-				}
-
-				break;
-			case ts.SyntaxKind.CallExpression:
-				const callExpr = node.asKindOrThrow(
-					ts.SyntaxKind.CallExpression,
-				);
-				const calling = handleExpression(callExpr.getExpression());
-				let isCallingSelf = false;
-
-				{
-					let branchNode: Node | undefined = callExpr;
-
-					while (
-						branchNode &&
-						!branchNode.isKind(ts.SyntaxKind.FunctionDeclaration)
-					) {
-						branchNode = branchNode.getParent();
-					}
-
-					if (branchNode) {
-						isCallingSelf = branchNode.getNameOrThrow() == calling;
-					}
-				}
-
-				if (unusedFunctions.includes(calling) && !isCallingSelf) {
-					unusedFunctions = unusedFunctions.filter(
-						(s) => s != calling,
-					);
-				}
+				// check!
 
 				break;
 			default:
@@ -1086,7 +1241,7 @@ function doOptimizationPass(file: SourceFile): boolean {
 			case ts.SyntaxKind.ClassDeclaration:
 				const cls = node.asKindOrThrow(ts.SyntaxKind.ClassDeclaration);
 
-				if (unusedClasses.includes(cls.getNameOrThrow())) {
+				if (!optimizations.usedClasses.includes(cls.getNameOrThrow())) {
 					cls.remove();
 					markChanged();
 				}
@@ -1097,7 +1252,12 @@ function doOptimizationPass(file: SourceFile): boolean {
 					ts.SyntaxKind.FunctionDeclaration,
 				);
 
-				if (unusedFunctions.includes(fn.getNameOrThrow())) {
+				if (
+					!optimizations.usedFunctions.includes(fn.getNameOrThrow())
+				) {
+					if (fn.getNameOrThrow() == "getPlayerRight") {
+						console.log(`removing function ${fn.print()}`);
+					}
 					fn.remove();
 					markChanged();
 				}
@@ -1110,16 +1270,39 @@ function doOptimizationPass(file: SourceFile): boolean {
 	return changed;
 }
 
+export async function optimizeFiles(
+	files: Array<SourceFile>,
+	pass = 0,
+): Promise<Array<SourceFile>> {
+	let optimizations: Optimizations = {
+		functionDependencies: {},
+		usedClasses: [],
+		usedFunctions: [],
+		usedGlobalVariables: [],
+	};
+
+	// First pass: optimization data collection
+	for (let file of files) {
+		optimizations = {
+			...optimizations,
+			...doOptimizationPass(file, optimizations),
+		};
+	}
+
+	console.log(`is getPlayerRight used? (pass ${pass})`);
+	console.log(optimizations.usedFunctions.includes("getPlayerRight"));
+
+	// Second pass: optimization emitting pass
+	for (let file of files)
+		while (await doOptimizationEmitPass(file, optimizations))
+			optimizeFiles(files, pass + 1);
+
+	return files;
+}
+
 export async function compileFile(file: SourceFile): Promise<string> {
 	let out = `// ${file.getFilePath()}\n`;
 
-	// First pass: optimization
-	let changed = true;
-	while (changed) {
-		changed = doOptimizationPass(file);
-	}
-
-	// Second pass: compilation
 	file.forEachChild((node) => {
 		out += compileNode(node);
 	});
@@ -1167,7 +1350,9 @@ export async function compileProject(project: Project) {
 		.filter((f) => !f.getFilePath().endsWith(".d.ts"));
 
 	const files = sortFilesByDependencies(unsortedFiles);
-	const outputs = await Promise.all(files.map((file) => compileFile(file)));
+	const outputs = await Promise.all(
+		(await optimizeFiles(files)).map((file) => compileFile(file)),
+	);
 
 	// Valve uses IncludeScript instead of Squirrel's dofile
 	const output = `try {
