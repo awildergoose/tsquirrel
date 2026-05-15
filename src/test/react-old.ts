@@ -19,7 +19,7 @@ export function h(type: string, props: any, ...children: any[]): VNode {
 
 export function Fragment(props: any, ...children: any[]) {
 	return {
-		type: "Fragment",
+		type: "_",
 		props: props || {},
 		children: flatten(children),
 	};
@@ -148,14 +148,14 @@ function walk(
 	node: any,
 	inheritedSlot: number | null,
 	fieldsOut: Record<string, any>,
-	placementsOut: Placement[]
+	placementsOut: Placement[],
 ): { fields: Record<string, any>; placements: Placement[] } {
 	if (!node) return { fields: fieldsOut, placements: placementsOut };
 
 	let newFields = fieldsOut;
 	let newPlacements = placementsOut;
 
-	if (node.type === "Fragment" || node.type === "hud") {
+	if (node.type === "_" || node.type === "hud") {
 		for (let i = 0; i < node.children.len(); i++) {
 			const c = node.children[i];
 			if (typeOf(c) === "table") {
@@ -170,7 +170,11 @@ function walk(
 		const name = props.name ? String(props.name) : nextId("text");
 		const slot = resolveSlot("slot" in props ? props.slot : inheritedSlot);
 		const flags = resolveFlags(
-			"style" in props ? props.style : "flags" in props ? props.flags : ""
+			"style" in props
+				? props.style
+				: "flags" in props
+					? props.flags
+					: "",
 		);
 
 		const updatedPlacements = newPlacements;
@@ -228,7 +232,7 @@ function makeGetter(children: Child[]): () => string {
 					printl(
 						"[getter error] " +
 							e +
-							" (make sure your variables are exported!)"
+							" (make sure your variables are exported!)",
 					);
 				}
 			} else {

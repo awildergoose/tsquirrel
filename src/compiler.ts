@@ -79,7 +79,7 @@ function assignSlot(name: string, rhs: string, isGlobal = false): string {
 function handleVariableDeclarationList(
 	node: VariableDeclarationList,
 	keyword: string = "",
-	setter: string = "<-"
+	setter: string = "<-",
 ): string {
 	let out = "";
 
@@ -107,7 +107,7 @@ function handleVariableDeclarationList(
 
 function handleVariableStatement(
 	node: VariableStatement,
-	inFunction: boolean
+	inFunction: boolean,
 ): string {
 	let keyword = "";
 	let setter = "<-";
@@ -124,7 +124,7 @@ function handleVariableStatement(
 		handleVariableDeclarationList(
 			node.getDeclarationList(),
 			keyword,
-			setter
+			setter,
 		) + "\n"
 	);
 }
@@ -139,20 +139,20 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 		switch (property.getKind()) {
 			case ts.SyntaxKind.PropertyAssignment: {
 				const propertyTyped = property.asKindOrThrow(
-					ts.SyntaxKind.PropertyAssignment
+					ts.SyntaxKind.PropertyAssignment,
 				);
 				out += `${propertyTyped.getName()} = ${handleExpression(
-					propertyTyped.getInitializerOrThrow()
+					propertyTyped.getInitializerOrThrow(),
 				)}`;
 				break;
 			}
 
 			case ts.SyntaxKind.MethodDeclaration: {
 				const method = property.asKindOrThrow(
-					ts.SyntaxKind.MethodDeclaration
+					ts.SyntaxKind.MethodDeclaration,
 				);
 				out += `${method.getName()} = function(${handleParameters(
-					method.getParameters()
+					method.getParameters(),
 				)}) {\n`;
 				out += handleBlockOrStatement(method.getBodyOrThrow());
 				out += "}";
@@ -163,7 +163,7 @@ function handleObjectLiteralExpression(node: ObjectLiteralExpression) {
 				const filePath = property.getSourceFile().getFilePath();
 				const line = property.getStartLineNumber();
 				log.traceWarn(
-					`Unknown object literal expression type: ${property.getKindName()} in ${filePath}:${line}`
+					`Unknown object literal expression type: ${property.getKindName()} in ${filePath}:${line}`,
 				);
 				out += `${property.getText()} /* Unknown object literal expression type ${property.getKindName()} */`;
 				break;
@@ -308,30 +308,30 @@ function handleExpression(node: Expression): string {
 	switch (node.getKind()) {
 		case ts.SyntaxKind.JsxElement:
 			return handleJsxElement(
-				node.asKindOrThrow(ts.SyntaxKind.JsxElement)
+				node.asKindOrThrow(ts.SyntaxKind.JsxElement),
 			);
 		case ts.SyntaxKind.JsxSelfClosingElement:
 			return handleJsxSelfClosing(
-				node.asKindOrThrow(ts.SyntaxKind.JsxSelfClosingElement)
+				node.asKindOrThrow(ts.SyntaxKind.JsxSelfClosingElement),
 			);
 		case ts.SyntaxKind.JsxFragment:
 			return handleJsxFragment(
-				node.asKindOrThrow(ts.SyntaxKind.JsxFragment)
+				node.asKindOrThrow(ts.SyntaxKind.JsxFragment),
 			);
 		case ts.SyntaxKind.ArrowFunction:
 			return handleArrowFunction(
-				node.asKindOrThrow(ts.SyntaxKind.ArrowFunction)
+				node.asKindOrThrow(ts.SyntaxKind.ArrowFunction),
 			);
 		case ts.SyntaxKind.Identifier:
 			if (node.getText() === "undefined") return "null";
 			return node.getText();
 		case ts.SyntaxKind.ObjectLiteralExpression:
 			return handleObjectLiteralExpression(
-				node.asKindOrThrow(ts.SyntaxKind.ObjectLiteralExpression)
+				node.asKindOrThrow(ts.SyntaxKind.ObjectLiteralExpression),
 			);
 		case ts.SyntaxKind.PropertyAccessExpression: {
 			const expr = node.asKindOrThrow(
-				ts.SyntaxKind.PropertyAccessExpression
+				ts.SyntaxKind.PropertyAccessExpression,
 			);
 			let left = handleExpression(expr.getExpression());
 			const right = expr.getName();
@@ -343,15 +343,15 @@ function handleExpression(node: Expression): string {
 		}
 		case ts.SyntaxKind.BinaryExpression:
 			return handleBinaryExpression(
-				node.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
+				node.asKindOrThrow(ts.SyntaxKind.BinaryExpression),
 			);
 		case ts.SyntaxKind.TemplateExpression:
 			return handleTemplateExpression(
-				node.asKindOrThrow(ts.SyntaxKind.TemplateExpression)
+				node.asKindOrThrow(ts.SyntaxKind.TemplateExpression),
 			);
 		case ts.SyntaxKind.CallExpression:
 			return handleCallExpression(
-				node.asKindOrThrow(ts.SyntaxKind.CallExpression)
+				node.asKindOrThrow(ts.SyntaxKind.CallExpression),
 			);
 		case ts.SyntaxKind.NewExpression: {
 			const nodeTyped = node.asKindOrThrow(ts.SyntaxKind.NewExpression);
@@ -361,21 +361,21 @@ function handleExpression(node: Expression): string {
 		}
 		case ts.SyntaxKind.ElementAccessExpression: {
 			const expr = node.asKindOrThrow(
-				ts.SyntaxKind.ElementAccessExpression
+				ts.SyntaxKind.ElementAccessExpression,
 			);
 			return `${handleExpression(
-				expr.getExpression()
+				expr.getExpression(),
 			)}[${handleExpression(expr.getArgumentExpressionOrThrow())}]`;
 		}
 		case ts.SyntaxKind.NonNullExpression:
 			return handleExpression(
 				node
 					.asKindOrThrow(ts.SyntaxKind.NonNullExpression)
-					.getExpression()
+					.getExpression(),
 			);
 		case ts.SyntaxKind.ArrayLiteralExpression:
 			return handleArrayLiteralExpression(
-				node.asKindOrThrow(ts.SyntaxKind.ArrayLiteralExpression)
+				node.asKindOrThrow(ts.SyntaxKind.ArrayLiteralExpression),
 			);
 		case ts.SyntaxKind.PrefixUnaryExpression:
 		case ts.SyntaxKind.PostfixUnaryExpression:
@@ -396,53 +396,53 @@ function handleExpression(node: Expression): string {
 			return "null";
 		case ts.SyntaxKind.AsExpression:
 			return handleExpression(
-				node.asKindOrThrow(ts.SyntaxKind.AsExpression).getExpression()
+				node.asKindOrThrow(ts.SyntaxKind.AsExpression).getExpression(),
 			);
 		case ts.SyntaxKind.TypeOfExpression:
 			return `typeof(${handleExpression(
 				node
 					.asKindOrThrow(ts.SyntaxKind.TypeOfExpression)
-					.getExpression()
+					.getExpression(),
 			)})`;
 		case ts.SyntaxKind.IfStatement:
 			return handleIfStatement(
-				node.asKindOrThrow(ts.SyntaxKind.IfStatement)
+				node.asKindOrThrow(ts.SyntaxKind.IfStatement),
 			);
 		case ts.SyntaxKind.ExpressionStatement:
 			return handleExpressionStatement(
-				node.asKindOrThrow(ts.SyntaxKind.ExpressionStatement)
+				node.asKindOrThrow(ts.SyntaxKind.ExpressionStatement),
 			);
 		case ts.SyntaxKind.ParenthesizedExpression:
 			return `(${handleExpression(
 				node
 					.asKindOrThrow(ts.SyntaxKind.ParenthesizedExpression)
-					.getExpression()
+					.getExpression(),
 			)})`;
 		case ts.SyntaxKind.ReturnStatement:
 			return handleReturnStatement(
-				node.asKindOrThrow(ts.SyntaxKind.ReturnStatement)
+				node.asKindOrThrow(ts.SyntaxKind.ReturnStatement),
 			);
 		case ts.SyntaxKind.ConditionalExpression:
 			return handleConditionalExpression(
-				node.asKindOrThrow(ts.SyntaxKind.ConditionalExpression)
+				node.asKindOrThrow(ts.SyntaxKind.ConditionalExpression),
 			);
 		case ts.SyntaxKind.ForStatement:
 			return handleForStatement(
-				node.asKindOrThrow(ts.SyntaxKind.ForStatement)
+				node.asKindOrThrow(ts.SyntaxKind.ForStatement),
 			);
 		case ts.SyntaxKind.TryStatement:
 			return handleTryStatement(
-				node.asKindOrThrow(ts.SyntaxKind.TryStatement)
+				node.asKindOrThrow(ts.SyntaxKind.TryStatement),
 			);
 		case ts.SyntaxKind.ForOfStatement:
 			return handleForOfStatement(
-				node.asKindOrThrow(ts.SyntaxKind.ForOfStatement)
+				node.asKindOrThrow(ts.SyntaxKind.ForOfStatement),
 			);
 		default: {
 			const filePath = node.getSourceFile().getFilePath();
 			const line = node.getStartLineNumber();
 			log.traceWarn(
-				`Unknown expression type: ${node.getKindName()} in ${filePath}:${line}`
+				`Unknown expression type: ${node.getKindName()} in ${filePath}:${line}`,
 			);
 			return `${node.getText()} /* Unknown expression type ${node.getKindName()} */`;
 		}
@@ -467,7 +467,7 @@ function handleBinaryExpression(node: BinaryExpression): string {
 		const line = node.getStartLineNumber();
 
 		log.traceWarn(
-			`The ?? operator is not supported in ${filePath}:${line}!`
+			`The ?? operator is not supported in ${filePath}:${line}!`,
 		);
 		op = "||";
 	}
@@ -552,7 +552,7 @@ function handleCallExpression(callExpr: CallExpression) {
 				const fn = callbackNode.asKindOrThrow(
 					callbackNode.isKind(ts.SyntaxKind.ArrowFunction)
 						? ts.SyntaxKind.ArrowFunction
-						: ts.SyntaxKind.FunctionExpression
+						: ts.SyntaxKind.FunctionExpression,
 				);
 				const params = fn
 					.getParameters()
@@ -565,7 +565,7 @@ function handleCallExpression(callExpr: CallExpression) {
 				} else {
 					// single expression arrow
 					body = `{ return ${handleExpression(
-						fn.getBody() as Expression
+						fn.getBody() as Expression,
 					)}; }`;
 				}
 
@@ -576,7 +576,7 @@ function handleCallExpression(callExpr: CallExpression) {
 		} else {
 			const pos = callExpr.getStartLineNumber();
 			throw new Error(
-				`hook expects exactly 2 arguments at line ${pos}, got ${args.length}`
+				`hook expects exactly 2 arguments at line ${pos}, got ${args.length}`,
 			);
 		}
 	}
@@ -614,18 +614,18 @@ function handleExpressionStatement(node: ExpressionStatement) {
 	switch (expr.getKind()) {
 		case ts.SyntaxKind.BinaryExpression:
 			return `${handleBinaryExpression(
-				expr.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
+				expr.asKindOrThrow(ts.SyntaxKind.BinaryExpression),
 			)}\n`;
 		case ts.SyntaxKind.CallExpression:
 			return `${handleCallExpression(
-				expr.asKindOrThrow(ts.SyntaxKind.CallExpression)
+				expr.asKindOrThrow(ts.SyntaxKind.CallExpression),
 			)}\n`;
 
 		case ts.SyntaxKind.DeleteExpression:
 			return `delete ${handleExpression(
 				expr
 					.asKindOrThrow(ts.SyntaxKind.DeleteExpression)
-					.getExpression()
+					.getExpression(),
 			)}\n`;
 
 		case ts.SyntaxKind.YieldExpression: {
@@ -642,7 +642,7 @@ function handleExpressionStatement(node: ExpressionStatement) {
 			const filePath = expr.getSourceFile().getFilePath();
 			const line = expr.getStartLineNumber();
 			log.traceWarn(
-				`Unknown expression statement type: ${expr.getKindName()} in ${filePath}:${line}`
+				`Unknown expression statement type: ${expr.getKindName()} in ${filePath}:${line}`,
 			);
 
 			return `${expr.getText()} /* Unknown expression statement type ${expr.getKindName()} */\n`;
@@ -671,7 +671,7 @@ function handleParameters(node: ParameterDeclaration[]) {
 }
 
 function handleFunctionDeclaration(node: FunctionDeclaration) {
-	const fnName = node.getName();
+	const fnName = node.getNameOrThrow();
 	const fnBody = node.getBodyOrThrow();
 	const fnParams = node.getParameters();
 	const params = fnParams.map((p) => p.getName());
@@ -682,8 +682,8 @@ function handleFunctionDeclaration(node: FunctionDeclaration) {
 		if (init)
 			defaults.push(
 				`if (${p.getName()} == null) ${p.getName()} = ${handleExpression(
-					init
-				)};`
+					init,
+				)};`,
 			);
 	});
 
@@ -712,7 +712,7 @@ function handleReturnStatement(node: ReturnStatement) {
 
 function handleConditionalExpression(node: ConditionalExpression) {
 	return `${handleExpression(node.getCondition())} ? ${handleExpression(
-		node.getWhenTrue()
+		node.getWhenTrue(),
 	)} : ${handleExpression(node.getWhenFalse())}`;
 }
 
@@ -724,7 +724,7 @@ function handleForStatement(node: ForStatement) {
 	out += `for (${handleVariableDeclarationList(
 		init.asKindOrThrow(ts.SyntaxKind.VariableDeclarationList),
 		"local ",
-		"="
+		"=",
 	)}; ${handleExpression(condition)}; ${handleExpression(incrementor)}) {\n`;
 	out += handleBlockOrStatement(node.getStatement());
 	out += "}\n";
@@ -734,13 +734,13 @@ function handleForStatement(node: ForStatement) {
 function handleClassDeclaration(node: ClassDeclaration) {
 	let out = "";
 
-	out += `class ${node.getName()} {\n`;
+	out += `class ${node.getNameOrThrow()} {\n`;
 	withScope(ScopeKind.ClassBody, () => {
 		node.getMembers().forEach((member) => {
 			switch (member.getKind()) {
 				case ts.SyntaxKind.Constructor: {
 					const ctor = member.asKindOrThrow(
-						ts.SyntaxKind.Constructor
+						ts.SyntaxKind.Constructor,
 					);
 					const params = handleParameters(ctor.getParameters());
 					withScope(ScopeKind.Constructor, () => {
@@ -752,7 +752,7 @@ function handleClassDeclaration(node: ClassDeclaration) {
 
 				case ts.SyntaxKind.PropertyDeclaration: {
 					const declaration = member.asKindOrThrow(
-						ts.SyntaxKind.PropertyDeclaration
+						ts.SyntaxKind.PropertyDeclaration,
 					);
 					const memberName = declaration.getName();
 					const memberInit = declaration.getInitializer();
@@ -766,13 +766,13 @@ function handleClassDeclaration(node: ClassDeclaration) {
 
 				case ts.SyntaxKind.MethodDeclaration: {
 					const method = member.asKindOrThrow(
-						ts.SyntaxKind.MethodDeclaration
+						ts.SyntaxKind.MethodDeclaration,
 					);
 					const mName = method.getName();
 					const mParams = handleParameters(method.getParameters());
 					withScope(ScopeKind.Method, () => {
 						const body = handleBlockOrStatement(
-							method.getBodyOrThrow()
+							method.getBodyOrThrow(),
 						);
 						out += `function ${mName}(${mParams}) ${body}\n`;
 					});
@@ -820,7 +820,7 @@ function handleDoStatement(node: DoStatement) {
 	let whileStatement = "";
 	if (!node.getExpressionIfKind(ts.SyntaxKind.Identifier))
 		whileStatement += ` while(${handleBlockOrStatement(
-			node.getExpression()
+			node.getExpression(),
 		)})`;
 	out += `do ${handleBlockOrStatement(node.getStatement())}${whileStatement}`;
 
@@ -887,7 +887,7 @@ function handleSwitchStatement(node: SwitchStatement) {
 			.join("");
 		if (clause.isKind(ts.SyntaxKind.CaseClause)) {
 			out += `case ${handleExpression(
-				clause.getExpression()
+				clause.getExpression(),
 			)}: {\n${statements}\n}\n`;
 		} else {
 			out += `default: {\n${statements}\n}\n`;
@@ -901,84 +901,84 @@ function compileNode(node: Node, inFunction = false): string {
 	switch (node.getKind()) {
 		case ts.SyntaxKind.CallExpression:
 			return handleCallExpression(
-				node.asKindOrThrow(ts.SyntaxKind.CallExpression)
+				node.asKindOrThrow(ts.SyntaxKind.CallExpression),
 			);
 
 		case ts.SyntaxKind.VariableStatement:
 			return handleVariableStatement(
 				node.asKindOrThrow(ts.SyntaxKind.VariableStatement),
-				inFunction
+				inFunction,
 			);
 
 		case ts.SyntaxKind.ExpressionStatement:
 			return handleExpressionStatement(
-				node.asKindOrThrow(ts.SyntaxKind.ExpressionStatement)
+				node.asKindOrThrow(ts.SyntaxKind.ExpressionStatement),
 			);
 
 		case ts.SyntaxKind.FunctionDeclaration:
 			return handleFunctionDeclaration(
-				node.asKindOrThrow(ts.SyntaxKind.FunctionDeclaration)
+				node.asKindOrThrow(ts.SyntaxKind.FunctionDeclaration),
 			);
 
 		case ts.SyntaxKind.ReturnStatement:
 			return handleReturnStatement(
-				node.asKindOrThrow(ts.SyntaxKind.ReturnStatement)
+				node.asKindOrThrow(ts.SyntaxKind.ReturnStatement),
 			);
 
 		case ts.SyntaxKind.ForStatement:
 			return handleForStatement(
-				node.asKindOrThrow(ts.SyntaxKind.ForStatement)
+				node.asKindOrThrow(ts.SyntaxKind.ForStatement),
 			);
 
 		case ts.SyntaxKind.BinaryExpression:
 			return (
 				handleBinaryExpression(
-					node.asKindOrThrow(ts.SyntaxKind.BinaryExpression)
+					node.asKindOrThrow(ts.SyntaxKind.BinaryExpression),
 				) + "\n"
 			);
 
 		case ts.SyntaxKind.ClassDeclaration:
 			return handleClassDeclaration(
-				node.asKindOrThrow(ts.SyntaxKind.ClassDeclaration)
+				node.asKindOrThrow(ts.SyntaxKind.ClassDeclaration),
 			);
 
 		case ts.SyntaxKind.IfStatement:
 			return handleIfStatement(
-				node.asKindOrThrow(ts.SyntaxKind.IfStatement)
+				node.asKindOrThrow(ts.SyntaxKind.IfStatement),
 			);
 
 		case ts.SyntaxKind.WhileStatement:
 			return handleWhileStatement(
-				node.asKindOrThrow(ts.SyntaxKind.WhileStatement)
+				node.asKindOrThrow(ts.SyntaxKind.WhileStatement),
 			);
 		case ts.SyntaxKind.DoStatement:
 			return handleDoStatement(
-				node.asKindOrThrow(ts.SyntaxKind.DoStatement)
+				node.asKindOrThrow(ts.SyntaxKind.DoStatement),
 			);
 
 		case ts.SyntaxKind.ForInStatement:
 			return handleForInStatement(
-				node.asKindOrThrow(ts.SyntaxKind.ForInStatement)
+				node.asKindOrThrow(ts.SyntaxKind.ForInStatement),
 			);
 		case ts.SyntaxKind.ForOfStatement:
 			return handleForOfStatement(
-				node.asKindOrThrow(ts.SyntaxKind.ForOfStatement)
+				node.asKindOrThrow(ts.SyntaxKind.ForOfStatement),
 			);
 		case ts.SyntaxKind.Block:
 			return handleBlockOrStatement(
-				node.asKindOrThrow(ts.SyntaxKind.Block)
+				node.asKindOrThrow(ts.SyntaxKind.Block),
 			);
 		case ts.SyntaxKind.EnumDeclaration:
 			return handleEnumDeclaration(
-				node.asKindOrThrow(ts.SyntaxKind.EnumDeclaration)
+				node.asKindOrThrow(ts.SyntaxKind.EnumDeclaration),
 			);
 		case ts.SyntaxKind.TryStatement:
 			return handleTryStatement(
-				node.asKindOrThrow(ts.SyntaxKind.TryStatement)
+				node.asKindOrThrow(ts.SyntaxKind.TryStatement),
 			);
 		case ts.SyntaxKind.SwitchStatement:
 			return handleSwitchStatement(
-				node.asKindOrThrow(ts.SyntaxKind.SwitchStatement)
+				node.asKindOrThrow(ts.SyntaxKind.SwitchStatement),
 			);
 		// Automagically gets handled!
 		case ts.SyntaxKind.ImportDeclaration:
@@ -989,7 +989,9 @@ function compileNode(node: Node, inFunction = false): string {
 			return "\n";
 		case ts.SyntaxKind.ThrowStatement:
 			return `throw ${handleExpression(
-				node.asKindOrThrow(ts.SyntaxKind.ThrowStatement).getExpression()
+				node
+					.asKindOrThrow(ts.SyntaxKind.ThrowStatement)
+					.getExpression(),
 			)}\n`;
 		case ts.SyntaxKind.NumericLiteral:
 		case ts.SyntaxKind.StringLiteral:
@@ -999,20 +1001,125 @@ function compileNode(node: Node, inFunction = false): string {
 			return `${node.getText()}\n`;
 
 		case ts.SyntaxKind.EndOfFileToken:
-			return "// EOF\n";
+			return "\n";
 		default:
 			const filePath = node.getSourceFile().getFilePath();
 			const line = node.getStartLineNumber();
 			log.traceWarn(
-				`Unknown node type: ${node.getKindName()} in ${filePath}:${line}`
+				`Unknown node type: ${node.getKindName()} in ${filePath}:${line}`,
 			);
 			return `${node.getText()} /* Unknown node: ${node.getKindName()} */\n`;
 	}
 }
 
-export async function compileFile(file: SourceFile): Promise<string> {
-	let out = "";
+function doOptimizationPass(file: SourceFile): boolean {
+	const REMOVE_UNUSED_EXPORTS = true;
 
+	let unusedFunctions: Array<String> = [];
+	let unusedClasses: Array<String> = [];
+	let changed = false;
+
+	const markChanged = () => {
+		changed = true;
+	};
+
+	file.forEachDescendant((node) => {
+		switch (node.getKind()) {
+			case ts.SyntaxKind.ClassDeclaration:
+				const cls = node.asKindOrThrow(ts.SyntaxKind.ClassDeclaration);
+				if (!cls.isExported() || REMOVE_UNUSED_EXPORTS)
+					unusedClasses.push(cls.getNameOrThrow());
+
+				break;
+			case ts.SyntaxKind.FunctionDeclaration:
+				const fn = node.asKindOrThrow(
+					ts.SyntaxKind.FunctionDeclaration,
+				);
+				if (!fn.isExported() || REMOVE_UNUSED_EXPORTS)
+					unusedFunctions.push(fn.getNameOrThrow());
+
+				break;
+			case ts.SyntaxKind.NewExpression:
+				const newExpr = node.asKindOrThrow(ts.SyntaxKind.NewExpression);
+				const newing = handleExpression(newExpr.getExpression());
+
+				if (unusedClasses.includes(newing)) {
+					unusedClasses = unusedClasses.filter((s) => s != newing);
+				}
+
+				break;
+			case ts.SyntaxKind.CallExpression:
+				const callExpr = node.asKindOrThrow(
+					ts.SyntaxKind.CallExpression,
+				);
+				const calling = handleExpression(callExpr.getExpression());
+				let isCallingSelf = false;
+
+				{
+					let branchNode: Node | undefined = callExpr;
+
+					while (
+						branchNode &&
+						!branchNode.isKind(ts.SyntaxKind.FunctionDeclaration)
+					) {
+						branchNode = branchNode.getParent();
+					}
+
+					if (branchNode) {
+						isCallingSelf = branchNode.getNameOrThrow() == calling;
+					}
+				}
+
+				if (unusedFunctions.includes(calling) && !isCallingSelf) {
+					unusedFunctions = unusedFunctions.filter(
+						(s) => s != calling,
+					);
+				}
+
+				break;
+			default:
+				break;
+		}
+	});
+	file.forEachDescendant((node) => {
+		switch (node.getKind()) {
+			case ts.SyntaxKind.ClassDeclaration:
+				const cls = node.asKindOrThrow(ts.SyntaxKind.ClassDeclaration);
+
+				if (unusedClasses.includes(cls.getNameOrThrow())) {
+					cls.remove();
+					markChanged();
+				}
+
+				break;
+			case ts.SyntaxKind.FunctionDeclaration:
+				const fn = node.asKindOrThrow(
+					ts.SyntaxKind.FunctionDeclaration,
+				);
+
+				if (unusedFunctions.includes(fn.getNameOrThrow())) {
+					fn.remove();
+					markChanged();
+				}
+				break;
+			default:
+				break;
+		}
+	});
+
+	return changed;
+}
+
+export async function compileFile(file: SourceFile): Promise<string> {
+	let out = `// ${file.getFilePath()}\n`;
+
+	// First pass: optimization
+	let changed = true;
+	while (changed) {
+		changed = doOptimizationPass(file);
+	}
+
+	// Second pass: compilation
 	file.forEachChild((node) => {
 		out += compileNode(node);
 	});
@@ -1031,8 +1138,8 @@ export function sortFilesByDependencies(files: SourceFile[]): SourceFile[] {
 				.map((module) => module.getModuleSpecifierSourceFile())
 				.filter(
 					(sourceFile): sourceFile is SourceFile =>
-						!!sourceFile && files.includes(sourceFile)
-				)
+						!!sourceFile && files.includes(sourceFile),
+				),
 		);
 
 	const result: SourceFile[] = [];

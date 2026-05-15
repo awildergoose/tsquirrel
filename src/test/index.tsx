@@ -10,8 +10,6 @@
 // 	},
 // };
 
-import { createSignal, h, render } from "./react";
-
 // myTable.a = 2;
 // myTable["a"] = 2;
 
@@ -192,39 +190,44 @@ import { createSignal, h, render } from "./react";
 // 	HUDSetLayout(layout);
 // }
 
+import { beginUI, createSignal, endUI } from "./std/hud";
+
 export const [score, setScore] = createSignal(0);
 export const [clock, setClock] = createSignal("");
 
-const ui = (
-	<hud>
-		<text
-			name="scoreLine"
-			slot={"middle_top"}
-			x={0.3}
-			y={0.05}
-			w={0.4}
-			h={0.1}
-		>
-			{"Score: "}
-			{() => score()}
-		</text>
+// const ui = (
+// 	<hud>
+// 		<text
+// 			name="scoreLine"
+// 			slot={"middle_top"}
+// 			x={0.3}
+// 			y={0.05}
+// 			w={0.4}
+// 			h={0.1}
+// 		>
+// 			{"Score: "}
+// 			{() => score()}
+// 		</text>
 
-		<text
-			name="ticker"
-			slot={"ticker"}
-			x={0.25}
-			y={0.04}
-			w={0.4}
-			h={0.08}
-			style={"align-center|nobg"}
-		>
-			{() => "[Event] " + clock()}
-		</text>
-	</hud>
-);
+// 		<text
+// 			name="ticker"
+// 			slot={"ticker"}
+// 			x={0.25}
+// 			y={0.04}
+// 			w={0.4}
+// 			h={0.08}
+// 			style={"align-center|nobg"}
+// 		>
+// 			{() => "[Event] " + clock()}
+// 		</text>
+// 	</hud>
+// );
 
 function InitHUD() {
-	render(ui);
+	beginUI();
+
+	endUI();
+	// render(ui);
 }
 
 hookGameEvent("weapon_fire", (params) => {
