@@ -471,11 +471,12 @@ function handleBinaryExpression(node: BinaryExpression): string {
 		);
 		op = "||";
 	}
-	if (op === "=") {
-		if (node.getLeft().isKind(ts.SyntaxKind.ElementAccessExpression)) {
-			op = "<-";
-		}
-	}
+    // This breaks with arrays, causing arr[i] = val to turn into arr[i] <- val
+	// if (op === "=") {
+	//     if (node.getLeft().isKind(ts.SyntaxKind.ElementAccessExpression)) {
+	// 		op = "<-";
+	// 	}
+	// }
 
 	return `${left} ${op} ${right}`;
 }
@@ -1013,7 +1014,7 @@ function compileNode(node: Node, inFunction = false): string {
 }
 
 function doOptimizationPass(file: SourceFile): boolean {
-	const REMOVE_UNUSED_EXPORTS = true;
+	const REMOVE_UNUSED_EXPORTS = false;
 
 	let unusedFunctions: Array<String> = [];
 	let unusedClasses: Array<String> = [];

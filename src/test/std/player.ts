@@ -27,29 +27,26 @@ export function pushPlayer(
 	player.SetVelocity(currentVel.add(push));
 }
 
-export function EntCall(idxorname: string | number, funcname: any) {
+export function EntCall(idxorname: string | number, func: any) {
 	let hEnt = null;
-	const g_ModeScript =
-		getroottable().DirectorScript.MapScript.ChallengeScript;
 
 	if (typeof idxorname === "string") {
 		let foundany = false;
 		while ((hEnt = Entities.FindByName(hEnt!, idxorname))) {
 			foundany = true;
-			g_ModeScript._entHelper(hEnt, funcname);
+			func(hEnt);
 		}
 		if (!foundany) {
 			while ((hEnt = Entities.FindByClassname(hEnt, idxorname))) {
 				foundany = true;
-				g_ModeScript._entHelper(hEnt, funcname);
+				func(hEnt);
 			}
-			printl(`Never saw anything that matched ${idxorname}`);
 		}
 		return;
 	}
 	if (typeOf(idxorname) === "integer") {
 		hEnt = EntIndexToHScript(idxorname);
-		g_ModeScript._entHelper(hEnt, funcname);
+		func(hEnt);
 	}
 }
 
