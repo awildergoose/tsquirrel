@@ -55,6 +55,12 @@ declare global {
 		tostring(): string;
 	}
 
+	class Number {
+		tochar(): string;
+		tofloat(): number;
+		tostring(): string;
+	}
+
 	class String {
 		[n: number]: T;
 
@@ -70,6 +76,8 @@ declare global {
 	export type Record<K extends string | number, V> = {
 		[P in K]: V;
 	};
+
+	declare const DirectorScript: any;
 
 	const _charsize_ = 1;
 	const _floatsize_ = 4;
@@ -148,7 +156,7 @@ declare global {
 	function seterrorhandler(handler: Function): void;
 	function getconsttable(): Record<string, any>;
 	function setconsttable(
-		constTable: Record<string, any>
+		constTable: Record<string, any>,
 	): Record<string, any>;
 	function getroottable(): Record<string, any>;
 	function setroottable(rootTable: Record<string, any>): Record<string, any>;
@@ -160,15 +168,18 @@ declare global {
 	// Compiler-specific
 	declare function hook<K extends KnownHook>(
 		to: K,
-		callback: (...args: HookArgsMap[K]) => void
+		callback: (...args: HookArgsMap[K]) => void,
 	): void;
-
 	declare function hook(to: string, callback: (...args: any[]) => void): void;
-
 	declare function hookGameEvent<T extends GameEventName>(
 		event: T,
-		callback: (params: GameEventMap[T]) => void
+		callback: (params: GameEventMap[T]) => void,
 	): void;
+	/**
+	 * Emits squirrel code directly
+	 * @param code The Squirrel code to emit
+	 */
+	declare function rawemit(code: string);
 
 	// Standard library
 	function acall(fn: Function, args: any[]): any;

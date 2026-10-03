@@ -470,13 +470,18 @@ function handleBinaryExpression(node: BinaryExpression): string {
 			`The ?? operator is not supported in ${filePath}:${line}!`,
 		);
 		op = "||";
+    }
+    // HACK: we don't know if we're supposed to assign an existing slot or make a new one
+    //       so instead, we rely on YOU! the consumer! to add a /*<-*/ comment
+	if (op === "=") {
+		if (node.getLeft().isKind(ts.SyntaxKind.ElementAccessExpression)) {
+			const rawText = node
+				.getLeft()
+				.asKindOrThrow(ts.SyntaxKind.ElementAccessExpression)
+				.print();
+			if (rawText.startsWith("/*<-*/")) op = "<-";
+		}
 	}
-    // This breaks with arrays, causing arr[i] = val to turn into arr[i] <- val
-	// if (op === "=") {
-	//     if (node.getLeft().isKind(ts.SyntaxKind.ElementAccessExpression)) {
-	// 		op = "<-";
-	// 	}
-	// }
 
 	return `${left} ${op} ${right}`;
 }
@@ -526,6 +531,27 @@ function handleCallExpression(callExpr: CallExpression) {
 					return `${target} * ${args[0]}`;
 				}
 			}
+		}
+	}
+
+	if (
+		exprNode.isKind(ts.SyntaxKind.Identifier) &&
+		exprNode.getText() === "rawemit"
+	) {
+		const args = callExpr.getArguments();
+
+		if (args.length === 1) {
+			const textNode = args[0]!;
+			const text = textNode.isKind(ts.SyntaxKind.StringLiteral)
+				? (textNode as any).getLiteralText()
+				: handleExpression(textNode as Expression);
+
+			return text;
+		} else {
+			const pos = callExpr.getStartLineNumber();
+			throw new Error(
+				`rawemit expects exactly 1 argument at line ${pos}, got ${args.length}`,
+			);
 		}
 	}
 

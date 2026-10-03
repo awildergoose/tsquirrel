@@ -24,10 +24,10 @@
 	},
 	"private": false,
 	"scripts": {
-		"watch": "bun --watch src/index.ts --path src/test/tsconfig.json --watch",
-		"watchBadImports": "bun --watch src/index.ts --path src/test/tsconfig.json --watch --no-watch-recreates-project",
-		"watchtest": "bun --watch src/testcompile.ts",
-		"eventsjson": "bun events/convert.ts events/gameevents && bun events/convert.ts events/modevents && bun events/convert.ts events/serverevents"
+		"watch": "deno run --allow-env --allow-sys --allow-read --allow-write --allow-run --watch src/index.ts --path src/test/tsconfig.json --watch --postbuild .\\copy.bat",
+		"watchBadImports": "deno run --allow-env --allow-sys --allow-read --allow-write --watch src/index.ts --path src/test/tsconfig.json --watch --no-watch-recreates-project --postbuild .\\copy.bat",
+		"watchtest": "deno run --allow-env --allow-read --allow-run --watch src/testcompile.ts",
+		"eventsjson": "deno run --allow-read --allow-write events/convert.ts events/gameevents && deno run --allow-read --allow-write events/convert.ts events/modevents && deno run --allow-read --allow-write events/convert.ts events/serverevents"
 	},
 	"type": "module"
 }

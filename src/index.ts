@@ -3,12 +3,14 @@ import { watch } from "fs";
 import { Project } from "ts-morph";
 import { compileProject } from "./compiler";
 import log from "./logger";
+import { exec, spawn } from "child_process";
 
 class CompileCommand extends Command {
 	static override paths = [];
 
 	projectPath = Option.String("--path", "tsconfig.json");
 	watchMode = Option.Boolean("--watch", false);
+	postBuildCommand = Option.String("--postbuild", "");
 
 	// This will recreate the TypeScript project each time a file changes.
 	// This slows down speeds significantly, but it's the solution to
@@ -44,6 +46,12 @@ class CompileCommand extends Command {
 	private async compileAndCheck(): Promise<void> {
 		if (this.watchRecreatesProject) this.project = this.createProject();
 		await compileProject(this.project);
+
+		if (this.postBuildCommand !== "") {
+			exec(this.postBuildCommand, (err, stdout, stderr) => {
+				if (err) console.error(err);
+			});
+		}
 	}
 
 	private watchAllFiles() {
